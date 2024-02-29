@@ -99,7 +99,9 @@ REDIS = {
 }
 
 # CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", f"redis://{REDIS['USER']}:{REDIS['PASSWORD']}@{REDIS['HOST']}:{REDIS['PORT']}")
-CELERY_BROKER_URL = 'redis://redis:6379/0'
+
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
+# CELERY_RESULT_BACKEND = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
