@@ -11,7 +11,8 @@ from .models import TelegramUser, TelegramUserUpload
 
 
 @app.task
-def convert(id):
+@async_to_sync
+async def convert(id):
     tup = TelegramUserUpload.objects.get(id=id)
     json_data = json.loads(tup.json_field.read())
 
@@ -42,11 +43,9 @@ def convert(id):
         sql_session.dc_id, sql_session.server_address, sql_session.port)
     django_session.auth_key = sql_session.auth_key
 
-    async def cv():
-        telegram_client = TelegramClient(
-            django_session, app.api_id, app.api_hash)
-        telegram_client.connect()
-    async_to_sync(cv)()
+    telegram_client = TelegramClient(
+        django_session, app.api_id, app.api_hash)
+    telegram_client.connect()
 
 
 # @app.task

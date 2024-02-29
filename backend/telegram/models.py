@@ -1,10 +1,10 @@
-import time
 from django.db import models
 from model_utils.models import TimeStampedModel
 from django_telethon.models import ClientSession, App
 from django_telethon.sessions import DjangoSession
+from telethon import TelegramClient
 
-from telegram.utils import send_mess
+from asgiref.sync import async_to_sync
 
 from proxies.models import ProxyServer
 
@@ -40,11 +40,16 @@ class TelegramUser(TimeStampedModel):
     def __str__(self):
         return f"{self.id} - @{self.username} - {self.first_name}  {self.last_name}"
 
-    def send_message(self, chat_id, message):
-        sleep_time = 60/150 * len(message)
-        time.sleep(sleep_time)
-        django_session = DjangoSession(client_session=self.session)
-        send_mess(chat_id, message, django_session, self.app.api_id, self.app.api_hash, self.proxy_server.get_proxy_dict())
+    @async_to_sync
+    async def send_message(self, chat_id, message):
+        telegram_client = TelegramClient(
+            session=DjangoSession(client_session=self.session),
+            api_id=self.app.api_id,
+            api_hash=self.app.api_hash,
+            proxy=self.proxy_server.get_proxy_dict(),
+        )
+        async with telegram_client:
+            await telegram_client.send_message(chat_id, message)
 
 
 class TelegramUserUpload(models.Model):
