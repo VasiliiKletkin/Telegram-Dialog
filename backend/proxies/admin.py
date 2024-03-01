@@ -9,7 +9,7 @@ class ProxyServerAdmin(admin.ModelAdmin):
     list_display = ("__str__", "is_active")
 
     def check_obj(self, request, queryset):
-        messages.add_message(request, messages.INFO, 'Scenes started')
+        messages.add_message(request, messages.INFO, 'Checking...')
         for obj in queryset:
             check_proxy.delay(obj.id)
 
