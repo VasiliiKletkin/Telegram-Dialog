@@ -1,9 +1,9 @@
+from asgiref.sync import async_to_sync
 from core.celery import app
 from django_telethon.sessions import DjangoSession
 from proxies.tasks import check_proxy
 from telethon.sync import TelegramClient
 from telethon.tl.functions.channels import JoinChannelRequest
-from asgiref.sync import async_to_sync
 
 from .models import TelegramUser
 
