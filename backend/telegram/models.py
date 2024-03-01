@@ -13,7 +13,7 @@ class TelegramGroup(TimeStampedModel):
 
 
 class TelegramUser(TimeStampedModel):
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
 
     id = models.BigIntegerField(primary_key=True)
     username = models.CharField(max_length=32, null=True, blank=True)

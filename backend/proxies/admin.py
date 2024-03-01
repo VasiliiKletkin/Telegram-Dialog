@@ -1,9 +1,19 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 
 from proxies.models import ProxyServer
+from .tasks import check_proxy
+
 
 class ProxyServerAdmin(admin.ModelAdmin):
-    pass
+    actions = ['check_obj']
+    list_display = ("__str__", "is_active")
+
+    def check_obj(self, request, queryset):
+        messages.add_message(request, messages.INFO, 'Scenes started')
+        for obj in queryset:
+            check_proxy(obj.id)
+
+    check_obj.short_description = "Check Proxy"
 
 
 admin.site.register(ProxyServer, ProxyServerAdmin)
