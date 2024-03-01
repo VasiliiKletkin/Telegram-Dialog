@@ -13,11 +13,10 @@ def check_proxy(id):
             proxy.protocol: f"{proxy.protocol}://{proxy.username}:{proxy.password}@{proxy.address}:{proxy.port}",
         }
         res = requests.get("https://ifconfig.me/", proxies=proxies)
-        if res.status_code == 200:
-            proxy.is_active = True
-        else:
-            proxy.is_active = False
-    except Exception as error:
+        if not res.status_code == 200:
+            raise Exception
+        proxy.is_active = True
+    except Exception:
         proxy.is_active = False
     finally:
         proxy.save()

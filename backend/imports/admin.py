@@ -9,7 +9,7 @@ class TelegramUserUploadAdmin(admin.ModelAdmin):
     def convert_to_orm(self, request, queryset):
         messages.add_message(request, messages.INFO, 'Scenes started')
         for obj in queryset:
-            convert(obj.id)
+            convert.delay(obj.id)
 
     convert_to_orm.short_description = "Convert to ORM"
 

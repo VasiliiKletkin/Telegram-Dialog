@@ -11,7 +11,7 @@ class ProxyServerAdmin(admin.ModelAdmin):
     def check_obj(self, request, queryset):
         messages.add_message(request, messages.INFO, 'Scenes started')
         for obj in queryset:
-            check_proxy(obj.id)
+            check_proxy.delay(obj.id)
 
     check_obj.short_description = "Check Proxy"
 
