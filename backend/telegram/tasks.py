@@ -61,7 +61,7 @@ def send_message(telegram_user_id, chat_id, message):
 
 
 @app.task()
-async def join_to_chat(telegram_user_id, chat_id):
+def join_to_chat(telegram_user_id, chat_id):
     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
 
     @async_to_sync
