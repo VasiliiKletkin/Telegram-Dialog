@@ -1,6 +1,7 @@
 from django.contrib import admin, messages
-from .tasks import convert_to_orm
+
 from .models import TelegramUserUpload
+from .tasks import convert_to_orm
 
 
 class TelegramUserUploadAdmin(admin.ModelAdmin):
@@ -10,7 +11,6 @@ class TelegramUserUploadAdmin(admin.ModelAdmin):
         messages.add_message(request, messages.INFO, 'Scenes started')
         for obj in queryset:
             convert_to_orm.delay(obj.id)
-
     convert.short_description = "Convert to ORM"
 
 

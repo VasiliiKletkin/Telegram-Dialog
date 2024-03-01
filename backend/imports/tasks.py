@@ -1,9 +1,9 @@
 import json
 
-from telegram.models import TelegramUser
 from core.celery import app
 from django_telethon.models import App, ClientSession
 from django_telethon.sessions import DjangoSession
+from telegram.models import TelegramUser
 from telethon.sessions import SQLiteSession
 
 from .models import TelegramUserUpload
