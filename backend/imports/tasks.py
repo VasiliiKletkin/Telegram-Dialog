@@ -1,18 +1,16 @@
 import json
 
-from asgiref.sync import async_to_sync
 from telegram.models import TelegramUser
 from core.celery import app
 from django_telethon.models import App, ClientSession
 from django_telethon.sessions import DjangoSession
-from telethon import TelegramClient
 from telethon.sessions import SQLiteSession
 
 from .models import TelegramUserUpload
 
 
 @app.task()
-async def convert(id):
+def convert_to_orm(id):
     tup = TelegramUserUpload.objects.get(id=id)
     json_data = json.loads(tup.json_field.read())
 
@@ -33,7 +31,7 @@ async def convert(id):
             'last_name': json_data['last_name'],
             'app_json': json_data,
             'app': app,
-            'session': client_session,
+            'client_session': client_session,
         }
     )
 
@@ -42,6 +40,3 @@ async def convert(id):
     django_session.set_dc(
         sql_session.dc_id, sql_session.server_address, sql_session.port)
     django_session.auth_key = sql_session.auth_key
-
-    telegram_client = TelegramClient(
-        django_session, app.api_id, app.api_hash)
