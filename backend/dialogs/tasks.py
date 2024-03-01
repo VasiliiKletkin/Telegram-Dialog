@@ -12,7 +12,7 @@ def start_scene(id):
     scene = Scene.objects.get(id=id)
     if not scene.is_active:
         return
-    
+
     for message in scene.dialog.messages.all():
         role = scene.roles.get(role=message.role)
         send_message(scene.group.username, message.text, role.telegram_user.id)
@@ -32,11 +32,15 @@ def check_scene(id):
         check_user(user.id)
 
     try:
+        if roles.count() == scene.dialog.get_roles_count():
+            raise Exception
+
         if telegram_users.filter(is_active=False).exists():
             raise Exception
 
         for user in telegram_users:
-            if not user.client_session.entity_set.filter(Q(name=scene.group.name) | Q(username=scene.group.username)).exists():  #FIXME change on more better option
+            # FIXME change on more better option
+            if not user.client_session.entity_set.filter(Q(name=scene.group.name) | Q(username=scene.group.username)).exists():
                 join_to_chat(user.id, scene.group.username)
         scene.is_active = True
     except Exception:
