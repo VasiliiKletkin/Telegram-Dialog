@@ -32,7 +32,6 @@ def check_scene(id):
         check_user(user.id)
 
     try:
-        print("roles.count()", roles.count(), scene.dialog.get_roles_count())
         if roles.count() != scene.dialog.get_roles_count():
             raise Exception
 

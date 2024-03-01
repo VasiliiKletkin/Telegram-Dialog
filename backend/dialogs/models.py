@@ -31,7 +31,7 @@ class Dialog(TimeStampedModel):
     name = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"{self.name} {self.get_roles_count()}"
+        return f"{self.name} {self.get_roles_count()} roles"
 
     def get_roles_count(self):
         return self.messages.values('role').distinct().count()
