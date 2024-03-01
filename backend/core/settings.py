@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     "proxies",
     "telegram",
     "dialogs",
-    
+    "imports",
 ]
 
 MIDDLEWARE = [

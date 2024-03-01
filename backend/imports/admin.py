@@ -9,7 +9,7 @@ from .models import TelegramUserUpload
 class TelegramUserUploadAdmin(admin.ModelAdmin):
     def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
         super().save_model(request, obj, form, change)
-        convert.delay(obj.id)
+        convert(obj.id)
 
 
 admin.site.register(TelegramUserUpload, TelegramUserUploadAdmin)

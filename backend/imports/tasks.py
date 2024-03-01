@@ -11,7 +11,7 @@ from telethon.sessions import SQLiteSession
 from .models import TelegramUserUpload
 
 
-@app.task
+# @app.task
 @async_to_sync
 async def convert(id):
     tup = TelegramUserUpload.objects.get(id=id)
