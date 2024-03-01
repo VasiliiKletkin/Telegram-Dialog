@@ -32,7 +32,8 @@ def check_scene(id):
         check_user(user.id)
 
     try:
-        if roles.count() == scene.dialog.get_roles_count():
+        print("roles.count()", roles.count(), scene.dialog.get_roles_count())
+        if roles.count() != scene.dialog.get_roles_count():
             raise Exception
 
         if telegram_users.filter(is_active=False).exists():

@@ -20,13 +20,13 @@ class RoleInlineAdmin(admin.TabularInline):
 class SceneAdmin(admin.ModelAdmin):
     list_display = ('dialog', 'group', 'is_active')
     inlines = [RoleInlineAdmin]
-    actions = ['start_scene', 'check_obj']
+    actions = ['start', 'check_obj']
 
     def start(self, request, queryset):
-        messages.add_message(request, messages.INFO, 'Scenes Starting...')
+        messages.add_message(request, messages.INFO, 'Scenes starting...')
         for obj in queryset:
             start_scene.delay(obj.id)
-    start_scene.short_description = "Start scene"
+    start.short_description = "Start scene"
 
     def check_obj(self, request, queryset):
         messages.add_message(request, messages.INFO, 'Scenes checking...')
