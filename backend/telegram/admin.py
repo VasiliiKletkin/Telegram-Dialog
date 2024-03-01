@@ -1,7 +1,7 @@
-from typing import Any
-from django.contrib import admin
-from .models import TelegramGroup, TelegramUser, TelegramUserUpload
-from .tasks import convert
+from django.contrib import admin, messages
+from .tasks import send_message
+from django.conf import settings
+from .models import TelegramGroup, TelegramUser
 
 
 class TelegramGroupAdmin(admin.ModelAdmin):
@@ -9,15 +9,13 @@ class TelegramGroupAdmin(admin.ModelAdmin):
 
 
 class TelegramUserAdmin(admin.ModelAdmin):
-    pass
+    def send_test_message(self, request, queryset):
+        messages.add_message(request, messages.INFO, 'Scenes started')
+        for obj in queryset:
+            send_message.delay(obj.id, settings.TEST_USER_ID, "This user is working...")
+
+    send_test_message.short_description = "Send test message"
 
 
-class TelegramUserUploadAdmin(admin.ModelAdmin):
-    def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
-        super().save_model(request, obj, form, change)
-        convert.delay(obj.id)
-
-
-admin.site.register(TelegramUserUpload, TelegramUserUploadAdmin)
 admin.site.register(TelegramUser, TelegramUserAdmin)
 admin.site.register(TelegramGroup, TelegramGroupAdmin)
