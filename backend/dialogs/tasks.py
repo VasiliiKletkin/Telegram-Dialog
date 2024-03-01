@@ -2,7 +2,8 @@ from core.celery import app
 from telegram.models import TelegramUser
 from .models import Scene
 from telegram.tasks import send_message
-from telegram.tasks import check_user
+from django.db.models import Q
+from telegram.tasks import join_to_chat
 
 
 @app.task()
@@ -18,9 +19,22 @@ def start_scene(id):
 @app.task()
 def check_scene(id):
     scene = Scene.objects.get(id=id)
-    roles = scene.roles.all()
-    telegram_users_is_not_active = TelegramUser.objects.filter(
-        roles__in=roles, is_active=False).exists()
+    
+    try:
+        roles = scene.roles.all()
 
-    if telegram_users_is_not_active:
+        telegram_users = TelegramUser.objects.filter(
+            roles__in=roles)
+
+        if telegram_users.filter(is_active=False).exists():
+            raise Exception
+
+        for user in telegram_users:
+            if not user.client_session.entity_set.filter(Q(name=scene.group.name) | Q (username=scene.group.username)).exists():
+                join_to_chat(user.id, scene.group.username)
+
+    except Exception:
         scene.is_active = False
+
+    finally:
+        scene.save()

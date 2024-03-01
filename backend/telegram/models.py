@@ -24,7 +24,7 @@ class TelegramUser(TimeStampedModel):
 
     app = models.ForeignKey(
         App, on_delete=models.CASCADE)
-    session = models.ForeignKey(
+    client_session = models.ForeignKey(
         ClientSession, on_delete=models.CASCADE)
 
     proxy_server = models.ForeignKey(
