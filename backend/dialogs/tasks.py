@@ -15,7 +15,7 @@ def start_scene(id):
 
     for message in scene.dialog.messages.all():
         role = scene.roles.get(role=message.role)
-        send_message(scene.group.username, message.text, role.telegram_user.id)
+        send_message(role.telegram_user.id, scene.group.username, message.text)
         # role.telegram_user.send_message(
         #     scene.group.username, message.text)
 
