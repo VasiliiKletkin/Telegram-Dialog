@@ -1,15 +1,17 @@
-from typing import Any
-from django.contrib import admin
+from django.contrib import admin, messages
 from .tasks import convert
 from .models import TelegramUserUpload
 
-# Register your models here.
-
 
 class TelegramUserUploadAdmin(admin.ModelAdmin):
-    def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
-        super().save_model(request, obj, form, change)
-        convert(obj.id)
+    actions = ['convert_to_orm']
+
+    def convert_to_orm(self, request, queryset):
+        messages.add_message(request, messages.INFO, 'Scenes started')
+        for obj in queryset:
+            convert(obj.id)
+
+    convert_to_orm.short_description = "Convert to ORM"
 
 
 admin.site.register(TelegramUserUpload, TelegramUserUploadAdmin)
