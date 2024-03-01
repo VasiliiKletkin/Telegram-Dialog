@@ -51,9 +51,9 @@ def send_message(telegram_user_id, chat_id, message):
             api_hash=telegram_user.app.api_hash,
             proxy=telegram_user.proxy_server.get_proxy_dict(),
         )
-
         async with telegram_client:
-            await telegram_client.send_message(chat_id, message)
+            chat = await telegram_client.get_entity(chat_id)
+            await telegram_client.send_message(chat, message)
     send_mess()
 
 
