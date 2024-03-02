@@ -1,0 +1,22 @@
+name: Deploy to productions
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.PRODUCTION_SSH_HOST }}
+        username: ${{ secrets.PRODUCTION_SSH_USERNAME }}
+        password: ${{ secrets.PRODUCTION_SSH_PASSWORD }}
+        script: |
+          cd /home/Shop/
+          git pull origin main && git checkout main
+          docker-compose -f docker-compose.prod.yml up --build -d --remove-orphans
+          docker system prune -f
