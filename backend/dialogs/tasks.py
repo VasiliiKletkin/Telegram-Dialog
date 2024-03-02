@@ -1,9 +1,13 @@
+from datetime import timedelta
+
 from core.celery import app
-from telegram.models import TelegramUser
-from .models import Scene
-from telegram.tasks import send_message
 from django.db.models import Q
-from telegram.tasks import join_to_chat, check_user
+from django.utils import timezone
+from django_celery_beat.models import ClockedSchedule, PeriodicTask
+from telegram.models import TelegramUser
+from telegram.tasks import check_user, join_to_chat, send_message
+
+from .models import Scene
 
 
 @app.task()
@@ -15,9 +19,22 @@ def start_scene(id):
 
     for message in scene.dialog.messages.all():
         role = scene.roles.get(role=message.role)
-        send_message(role.telegram_user.id, scene.group.username, message.text)
-        # role.telegram_user.send_message(
-        #     scene.group.username, message.text)
+        
+        # target_time = timezone.now() + timedelta(minutes=5)
+
+        # clocked_schedule = ClockedSchedule.objects.create(clocked_time=target_time)
+
+        # PeriodicTask.objects.create(
+        #     clocked=clocked_schedule,
+        #     name="my-task",
+        #     description="Send message",
+        #     one_off=True,
+        #     task="telegram.tasks.send_message",
+        #     args=[3, 7]
+        # )
+
+        send_message.delay(role.telegram_user.id, scene.group.username, message.text)
+
 
 
 @app.task()
