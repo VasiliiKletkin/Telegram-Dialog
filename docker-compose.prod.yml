@@ -28,7 +28,6 @@ services:
     env_file:
       - .env
     volumes:
-      - ./backend:/home/app/backend
       - ./backend/staticfiles:/home/app/backend/staticfiles
       - ./backend/mediafiles:/home/app/backend/mediafiles
     expose:
@@ -51,8 +50,6 @@ services:
     build:
       context: ./backend
       dockerfile: ./Dockerfile
-    volumes:
-      - ./backend:/home/app/backend
     command: poetry run celery -A core beat -l info
     depends_on:
       - backend
@@ -62,8 +59,6 @@ services:
     build:
       context: ./backend
       dockerfile: ./Dockerfile
-    volumes:
-      - ./backend:/home/app/backend
     command: poetry run celery -A core worker -l info
     depends_on:
       - backend
