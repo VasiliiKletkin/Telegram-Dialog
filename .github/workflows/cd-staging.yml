@@ -9,17 +9,17 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    # - name: executing remote ssh commands using password
-    #   uses: appleboy/ssh-action@v1.0.0
-    #   with:
-    #     host: ${{ secrets.STAGING_SSH_HOST }}
-    #     username: ${{ secrets.STAGING_SSH_USERNAME }}
-    #     password: ${{ secrets.STAGING_SSH_PASSWORD }}
-    #     script: |
-    #       cd /home/Shop/
-    #       git pull origin staging && git checkout staging
-    #       docker-compose -f docker-compose.prod.yml up --build -d --remove-orphans
-    #       docker system prune -f
+    - name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.STAGING_SSH_HOST }}
+        username: ${{ secrets.STAGING_SSH_USERNAME }}
+        password: ${{ secrets.STAGING_SSH_PASSWORD }}
+        script: |
+          cd /home/Shop/
+          git pull origin staging && git checkout staging
+          docker-compose -f docker-compose.prod.yml up --build -d --remove-orphans
+          docker system prune -f
 
 
   # Send_notification:
