@@ -36,12 +36,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: executing remote ssh commands using password
+      - 
+        name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
+          host: ${{ secrets.PRODUCTION_SSH_HOST }}
+          username: ${{ secrets.PRODUCTION_SSH_USERNAME }}
+          password: ${{ secrets.PRODUCTION_SSH_PASSWORD }}
           script: |
             cd /home/Telegram-Dialog/
             docker-compose down && docker-compose pull && docker-compose up -d
