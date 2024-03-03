@@ -26,15 +26,16 @@ services:
     ports:
       - 8000:8000
 
-  # flower:
-  #   build:
-  #     context: ./backend
-  #     dockerfile: ./Dockerfile
-  #   command: celery -A backend flower
-  #   volumes:
-  #     - .:/home/app
-  #   ports:
-  #     - 5555:5555
+  flower:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+    command: poetry run celery -A backend flower
+    volumes:
+      - .:/home/app
+    ports:
+      - 5555:5555
+
 
   celery_sheduler:
     build:

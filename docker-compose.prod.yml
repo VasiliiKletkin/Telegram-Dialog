@@ -1,6 +1,17 @@
 version: '3.4'
 
 services:
+  postgres:
+    image: postgres:12.12-alpine
+    container_name: postgres
+    profiles:
+      - profileName
+    restart: always
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+
   redis:
     image: redis:6.2-alpine
     restart: always
@@ -18,8 +29,8 @@ services:
       - .env
     volumes:
       - ./backend:/home/app/backend
-      - ./backend/static:/home/app/backend/static
-      - ./backend/media:/home/app/backend/media
+      - ./backend/staticfiles:/home/app/backend/staticfiles
+      - ./backend/mediafiles:/home/app/backend/mediafiles
     expose:
       - 8000
     entrypoint: poetry run bash entrypoint.sh
@@ -74,7 +85,7 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
 
-      - ./backend/static:/home/app/backend/static
-      - ./backend/media:/home/app/backend/media
+      - ./backend/staticfiles:/home/app/backend/staticfiles
+      - ./backend/mediafiles:/home/app/backend/mediafiles
     depends_on:
       - backend
