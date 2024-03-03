@@ -12,12 +12,11 @@ RUN pip install poetry
 
 WORKDIR /home/app/backend
 
-COPY pyproject.toml poetry.lock ./
+COPY . .
 
 # RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
 RUN poetry install
 
-COPY . .
 
 # Creates a non-root user with an explicit UID and adds permission to access the /app folder
 # For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers

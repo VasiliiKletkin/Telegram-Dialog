@@ -163,5 +163,7 @@ cython_debug/
 *.json
 *session
 
-*/mediafiles
-*/staticfiles
+*mediafiles
+*staticfiles
+
+*postgres_data

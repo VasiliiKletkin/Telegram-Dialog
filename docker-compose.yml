@@ -1,6 +1,15 @@
 version: "3.4"
 
 services:
+  postgres:
+    image: postgres:12.12-alpine
+    container_name: postgres
+    restart: always
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+
   redis:
     image: redis:6.2-alpine
     restart: always
@@ -25,6 +34,9 @@ services:
     command: poetry run python manage.py runserver 0.0.0.0:8000
     ports:
       - 8000:8000
+    depends_on:
+      - postgres
+      - redis
 
   flower:
     build:
@@ -35,7 +47,9 @@ services:
       - .:/home/app
     ports:
       - 5555:5555
-
+    depends_on:
+      - postgres
+      - redis
 
   celery_sheduler:
     build:
@@ -45,7 +59,7 @@ services:
       - ./backend:/home/app/backend
     command: poetry run celery -A core beat -l info
     depends_on:
-      - backend
+      - postgres
       - redis
 
   celery_worker:
@@ -56,5 +70,5 @@ services:
       - ./backend:/home/app/backend
     command: poetry run celery -A core worker -l info
     depends_on:
-      - backend
+      - postgres
       - redis
