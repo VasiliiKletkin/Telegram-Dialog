@@ -16,12 +16,12 @@ jobs:
       - 
         name: Checkout
         uses: actions/checkout@v4
-      # -
-      #   name: Install the project dependencies
-      #   run: cd backend && poetry install
-      # - 
-      #   name: Run the automated tests (for example)
-      #   run: cd backend && poetry run python manage.py test
+      -
+        name: Install the project dependencies
+        run: cd backend && poetry install
+      - 
+        name: Run the automated tests (for example)
+        run: cd backend && poetry run python manage.py test
   linter:
     runs-on: ubuntu-latest
     steps:
