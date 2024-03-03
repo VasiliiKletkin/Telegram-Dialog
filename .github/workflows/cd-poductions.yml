@@ -31,19 +31,36 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
 
-
   deploy:
     name: Deploy to production
-    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: executing remote ssh commands using password
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          script: |
-            cd /home/Telegram-Dialog/
-            docker-compose down && docker-compose pull && docker-compose up -d
-            docker system prune -f
+    - 
+      name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.PRODUCTION_SSH_HOST }}
+        username: ${{ secrets.PRODUCTION_SSH_USERNAME }}
+        password: ${{ secrets.PRODUCTION_SSH_PASSWORD }}
+        script: |
+          cd /home/Telegram-Dialog/
+          git pull origin main && git checkout main
+          docker-compose -f docker-compose.prod.yml up --build -d --remove-orphans
+          docker system prune -f
+
+  # deploy:
+  #   name: Deploy to production
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: executing remote ssh commands using password
+  #       uses: appleboy/ssh-action@v1.0.0
+  #       with:
+  #         host: ${{ secrets.SSH_HOST }}
+  #         username: ${{ secrets.SSH_USERNAME }}
+  #         password: ${{ secrets.SSH_PASSWORD }}
+  #         script: |
+  #           cd /home/Telegram-Dialog/
+  #           docker-compose down && docker-compose pull && docker-compose up -d
+  #           docker system prune -f
+
