@@ -7,6 +7,7 @@ on:
 
 jobs:
   build:
+    name: Build & Push
     runs-on: ubuntu-latest
     steps:
       -
@@ -30,17 +31,17 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: executing remote ssh commands using password
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          script: |
-            cd /home/Telegram-Dialog/
-            docker-compose down && docker-compose pull && docker-compose up -d
-            docker system prune -f
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - name: executing remote ssh commands using password
+  #       uses: appleboy/ssh-action@v1.0.0
+  #       with:
+  #         host: ${{ secrets.SSH_HOST }}
+  #         username: ${{ secrets.SSH_USERNAME }}
+  #         password: ${{ secrets.SSH_PASSWORD }}
+  #         script: |
+  #           cd /home/Telegram-Dialog/
+  #           docker-compose down && docker-compose pull && docker-compose up -d
+  #           docker system prune -f
