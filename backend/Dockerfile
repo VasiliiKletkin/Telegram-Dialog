@@ -13,7 +13,7 @@ WORKDIR /home/app/backend
 COPY . /home/app/backend
 
 # Install pip requirements
-RUN pip install --no-cache-dir poetry && \
+RUN pip install poetry && \
     poetry install
 
 
