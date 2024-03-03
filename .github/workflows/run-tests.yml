@@ -22,3 +22,10 @@ jobs:
       # - 
       #   name: Run the automated tests (for example)
       #   run: cd backend && poetry run python manage.py test
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Checkout
+        uses: actions/checkout@v4
+
