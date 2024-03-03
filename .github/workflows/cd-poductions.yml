@@ -1,9 +1,9 @@
-name: ci
+name: CI Production
 
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
