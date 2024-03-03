@@ -16,9 +16,10 @@ ENV POETRY_NO_INTERACTION=1 \
 
 WORKDIR /home/app/backend
 
-COPY ./backend/pyproject.toml ./backend/poetry.lock ./
+COPY ./backend/pyproject.toml ./backend/poetry.lock .
 
-RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
+# RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
+RUN poetry install
 
 COPY ./backend /home/app/backend
 
