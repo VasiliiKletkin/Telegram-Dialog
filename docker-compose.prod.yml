@@ -30,6 +30,9 @@ services:
       - ./backend/mediafiles:/home/app/backend/mediafiles
     expose:
       - 8000
+    depends_on:
+      - postgres
+      - redis
     entrypoint: poetry run bash entrypoint.sh
     command: poetry run gunicorn core.wsgi:application --bind 0.0.0.0:8000
 
@@ -51,8 +54,9 @@ services:
     env_file:
       - ./.env
     depends_on:
-      - backend
+      - postgres
       - redis
+      - backend
     command: poetry run celery -A core beat -l info
 
 
@@ -63,8 +67,9 @@ services:
     env_file:
       - ./.env
     depends_on:
-      - backend
+      - postgres
       - redis
+      - backend
     command: poetry run celery -A core worker -l info
 
 

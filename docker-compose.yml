@@ -50,6 +50,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - backend
 
   celery_sheduler:
     build:
@@ -62,6 +63,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - backend
     command: poetry run celery -A core beat -l info
 
   celery_worker:
@@ -75,4 +77,5 @@ services:
     depends_on:
       - postgres
       - redis
+      - backend
     command: poetry run celery -A core worker -l info
