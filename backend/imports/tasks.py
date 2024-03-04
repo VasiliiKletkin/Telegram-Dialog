@@ -9,7 +9,7 @@ from telethon.sessions import SQLiteSession
 from .models import TelegramUserUpload
 
 
-@app.task()
+@app.task
 def convert_to_orm(id):
     tup = TelegramUserUpload.objects.get(id=id)
     json_data = json.loads(tup.json_field.read())

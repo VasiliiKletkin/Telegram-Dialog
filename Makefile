@@ -19,7 +19,7 @@ dstop:
 dmigr:
 	docker-compose exec web python manage.py makemigrations && docker-compose exec web python manage.py migrate
 duser:
-	docker-compose exec web python manage.py createsuperuser
+	docker-compose exec backend poetry run python manage.py createsuperuser
 dshell:
 	docker-compose exec web python manage.py shell
 

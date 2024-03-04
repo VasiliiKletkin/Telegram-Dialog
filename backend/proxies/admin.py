@@ -12,7 +12,6 @@ class ProxyServerAdmin(admin.ModelAdmin):
         messages.add_message(request, messages.INFO, 'Checking...')
         for obj in queryset:
             check_proxy.delay(obj.id)
-
     check_obj.short_description = "Check Proxy"
 
 
