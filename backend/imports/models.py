@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class TelegramUserUpload(models.Model):
+class TelegramUserImport(models.Model):
     json_field = models.FileField(upload_to='telegram_json')
     session_file = models.FileField(upload_to='telegram_session')
 

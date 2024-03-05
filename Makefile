@@ -6,7 +6,7 @@ dstrt:
 	make dmigr && make dcollect
 
 dcollect:
-	docker-compose exec web python manage.py collectstatic
+	docker-compose exec backend python manage.py collectstatic
 dupbuild:
 	docker-compose -f "docker-compose.prod.yml" up --build
 dup:
@@ -17,11 +17,11 @@ dstop:
 	docker-compose -f "docker-compose.prod.yml" stop
 
 dmigr:
-	docker-compose exec web python manage.py makemigrations && docker-compose exec web python manage.py migrate
+	docker-compose exec backend python manage.py makemigrations && docker-compose exec backend python manage.py migrate
 duser:
 	docker-compose exec backend poetry run python manage.py createsuperuser
 dshell:
-	docker-compose exec web python manage.py shell
+	docker-compose exec backend python manage.py shell
 
 dcreatedb:
 	docker-compose exec postgres createdb -h ${POSTGRES_HOST} -U ${POSTGRES_USER} ${POSTGRES_DATABASE}

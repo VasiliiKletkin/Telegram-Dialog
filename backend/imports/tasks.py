@@ -6,12 +6,12 @@ from django_telethon.sessions import DjangoSession
 from telegram.models import TelegramUser
 from telethon.sessions import SQLiteSession
 
-from .models import TelegramUserUpload
+from .models import TelegramUserImport
 
 
 @app.task
 def convert_to_orm(id):
-    tup = TelegramUserUpload.objects.get(id=id)
+    tup = TelegramUserImport.objects.get(id=id)
     json_data = json.loads(tup.json_field.read())
 
     app, app_is_created = App.objects.update_or_create(

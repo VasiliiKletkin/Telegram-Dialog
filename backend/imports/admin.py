@@ -1,10 +1,10 @@
 from django.contrib import admin, messages
 
-from .models import TelegramUserUpload
+from .models import TelegramUserImport
 from .tasks import convert_to_orm
 
 
-class TelegramUserUploadAdmin(admin.ModelAdmin):
+class TelegramUserImportAdmin(admin.ModelAdmin):
     actions = ['convert']
 
     def convert(self, request, queryset):
@@ -14,4 +14,4 @@ class TelegramUserUploadAdmin(admin.ModelAdmin):
     convert.short_description = "Convert to ORM"
 
 
-admin.site.register(TelegramUserUpload, TelegramUserUploadAdmin)
+admin.site.register(TelegramUserImport, TelegramUserImportAdmin)
