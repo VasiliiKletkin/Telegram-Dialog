@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
     'django_extensions',
     'django_telethon',
     'django_celery_results',
@@ -103,13 +104,6 @@ REDIS = {
 }
 
 
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
-# CELERY_RESULT_BACKEND = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
-CELERY_RESULT_BACKEND = 'django-db'
-CELERY_RESULT_EXTENDED = True
-
-# CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -157,7 +151,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "django-db"),
+CELERY_RESULT_EXTENDED = True
+
+
 TEST_USER_ID = 5724639696
-
-
-DJANGO_ALLOW_ASYNC_UNSAFE=True
