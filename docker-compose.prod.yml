@@ -55,6 +55,9 @@ services:
       dockerfile: ./Dockerfile
     env_file:
       - ./.env
+    volumes:
+      - ./backend/staticfiles:/home/app/backend/staticfiles
+      - ./backend/mediafiles:/home/app/backend/mediafiles
     depends_on:
       - postgres
       - redis
@@ -68,6 +71,9 @@ services:
       dockerfile: ./Dockerfile
     env_file:
       - ./.env
+    volumes:
+      - ./backend/staticfiles:/home/app/backend/staticfiles
+      - ./backend/mediafiles:/home/app/backend/mediafiles
     depends_on:
       - postgres
       - redis
