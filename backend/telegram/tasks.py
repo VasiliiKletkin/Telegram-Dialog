@@ -27,6 +27,9 @@ def check_user(id):
                 proxy=telegram_user.proxy_server.get_proxy_dict(),
             )
 
+            if not telegram_client.is_user_authorized():
+                raise Exception
+
             async with telegram_client:
                 await telegram_client.get_me()
                 await telegram_client.get_dialogs()
