@@ -1,7 +1,8 @@
 from django.db import models
+from model_utils.models import TimeStampedModel
 
 
-class ProxyServer(models.Model):
+class ProxyServer(TimeStampedModel):
     is_active = models.BooleanField(default=False)
 
     protocol = models.CharField(max_length=10, default='socks5')
@@ -10,6 +11,7 @@ class ProxyServer(models.Model):
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
 
+    info_check_proxy = models.JSONField(null=True, blank=True)
     def __str__(self):
         return f"{self.protocol}://{self.username}:{self.password}@{self.address}:{self.port}"
 

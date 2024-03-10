@@ -17,7 +17,7 @@ dstop:
 	docker-compose -f "docker-compose.prod.yml" stop
 
 dmigr:
-	docker-compose exec backend python manage.py makemigrations && docker-compose exec backend python manage.py migrate
+	docker-compose exec backend poetry run python manage.py makemigrations && docker-compose exec backend poetry run python manage.py migrate
 duser:
 	docker-compose exec backend poetry run python manage.py createsuperuser
 dshell:
