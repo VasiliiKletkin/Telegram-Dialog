@@ -14,9 +14,10 @@ from .models import Scene
 def start_scene(id):
     check_scene(id)
     scene = Scene.objects.get(id=id)
-    if not scene.is_active:
-        return
-
+    
+    if not scene.check_active():
+        raise Exception("scene in not active")
+    
     for message in scene.dialog.messages.all():
         role = scene.roles.get(role=message.role)
         

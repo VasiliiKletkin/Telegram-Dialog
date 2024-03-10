@@ -5,7 +5,7 @@ from proxies.tasks import check_proxy
 from telethon.sync import TelegramClient
 from telethon.tl.functions.channels import JoinChannelRequest
 
-from .models import TelegramUser
+from .models import TelegramGroup, TelegramUser, TelegramGroupMessage
 
 
 @app.task()
@@ -14,8 +14,8 @@ def check_user(id):
     check_proxy(telegram_user.proxy_server_id)
 
     try:
-        if not telegram_user.proxy_server.is_active:
-            raise Exception
+        if not telegram_user.check_active():
+            raise Exception("telegram user in not active")
 
         @async_to_sync
         async def checking():
@@ -46,6 +46,9 @@ def check_user(id):
 def send_message(telegram_user_id, chat_id, message):
     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
 
+    if not telegram_user.check_active():
+        raise Exception("telegram user in not active")
+
     @async_to_sync
     async def send_mess():
         telegram_client = TelegramClient(
@@ -64,6 +67,9 @@ def send_message(telegram_user_id, chat_id, message):
 def join_to_chat(telegram_user_id, chat_id):
     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
 
+    if not telegram_user.check_active():
+        raise Exception("telegram user in not active")
+
     @async_to_sync
     async def join():
         telegram_client = TelegramClient(
@@ -76,3 +82,28 @@ def join_to_chat(telegram_user_id, chat_id):
             chat = await telegram_client.get_entity(chat_id)
             await telegram_client(JoinChannelRequest(chat))
     join()
+
+
+@app.task()
+def get_messages_from_dialog(id):
+    telegram_group = TelegramGroup.objects.get(id=id)
+    telegram_user = TelegramUser.objects.filter(is_active=True).first()
+
+    if not telegram_user.check_active():
+        raise Exception("telegram user in not active")
+
+    @async_to_sync
+    async def get_mess():
+        telegram_client = TelegramClient(
+            session=DjangoSession(
+                client_session=telegram_user.client_session),
+            api_id=telegram_user.app.api_id,
+            api_hash=telegram_user.app.api_hash,
+            proxy=telegram_user.proxy_server.get_proxy_dict(),
+        )
+        async with telegram_client:
+            group = await telegram_client.get_entity(telegram_group.username)
+            for message in await telegram_client.iter_messages(group, 1000):
+                TelegramGroupMessage.objects.create(message_id=message.id, user_id=message.from_id.user_id, group=telegram_group,
+                                                    message=message.text, reply_to_msg_id=message.reply_to.reply_to_msg_id, date=message.date)
+    get_mess()

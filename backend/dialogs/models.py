@@ -56,11 +56,19 @@ class Scene(TimeStampedModel):
     def __str__(self):
         return f"{self.dialog.name} {self.group.username}"
 
+    def check_active(self):
+        roles = self.roles.all()
+        telegram_users = TelegramUser.objects.filter(
+            role__in=roles).distinct()
+        are_users_active = all(user.check_active() for user in telegram_users)
+        return are_users_active and roles.count() == self.dialog.get_roles_count()
+
 
 class Role(TimeStampedModel):
     scene = models.ForeignKey(
         Scene, on_delete=models.CASCADE, related_name='roles')
-    telegram_user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
+    telegram_user = models.ForeignKey(
+        TelegramUser, on_delete=models.CASCADE, related_name='roles')
     role = models.PositiveIntegerField(choices=ROLES)
 
     def __str__(self):

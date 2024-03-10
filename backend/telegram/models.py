@@ -12,6 +12,19 @@ class TelegramGroup(TimeStampedModel):
         return f"{self.name} - @{self.username}"
 
 
+class TelegramGroupMessage(models.Model):
+    group = models.ForeignKey(
+        TelegramGroup, on_delete=models.CASCADE)
+    message_id = models.BigIntegerField()
+    user_id = models.BigIntegerField()
+    reply_to_msg_id = models.BigIntegerField()
+    message = models.TextField()
+    date = models.DateTimeField()
+
+    def __str__(self):
+        return f"{self.group} - {self.message}"
+
+
 class TelegramUser(TimeStampedModel):
     is_active = models.BooleanField(default=False)
 
@@ -34,3 +47,6 @@ class TelegramUser(TimeStampedModel):
 
     def __str__(self):
         return f"{self.id} - @{self.username} - {self.first_name}  {self.last_name}"
+
+    def check_active(self):
+        return (self.proxy_server.check_active() and self.is_active) if self.proxy_server else False

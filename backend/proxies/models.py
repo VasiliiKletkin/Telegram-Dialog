@@ -12,6 +12,10 @@ class ProxyServer(TimeStampedModel):
     password = models.CharField(max_length=100)
 
     info_check_proxy = models.JSONField(null=True, blank=True)
+
+    def check_active(self):
+        return self.is_active
+
     def __str__(self):
         return f"{self.protocol}://{self.username}:{self.password}@{self.address}:{self.port}"
 
