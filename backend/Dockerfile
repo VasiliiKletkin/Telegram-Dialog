@@ -1,8 +1,9 @@
 # For more information, please refer to https://aka.ms/vscode-docker-python
 
-FROM python:3.9-slim as requirements-stage
+FROM python:3.12-slim as requirements-stage
 
 WORKDIR /tmp
+
 RUN pip install poetry
 COPY ./pyproject.toml ./poetry.lock* /tmp/
 RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
@@ -13,7 +14,6 @@ EXPOSE 8000
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-
 
 WORKDIR /home/app/backend
 
