@@ -1,0 +1,30 @@
+# For more information, please refer to https://aka.ms/vscode-docker-python
+
+FROM python:3.12-slim as requirements-stage
+
+WORKDIR /tmp
+
+RUN pip install poetry
+COPY ./pyproject.toml ./poetry.lock* /tmp/
+RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
+
+
+FROM python:3.12-slim
+EXPOSE 8000
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /home/app/backend
+
+COPY --from=requirements-stage /tmp/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
+
+COPY . .
+
+
+# Creates a non-root user with an explicit UID and adds permission to access the /app folder
+# # For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /home/app/backend
+USER appuser
+
