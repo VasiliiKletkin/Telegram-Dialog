@@ -85,7 +85,7 @@ def join_to_chat(telegram_user_id, chat_id):
 
 
 @app.task()
-def get_messages_from_dialog(id):
+def get_messages_from_group(id):
     telegram_group = TelegramGroup.objects.get(id=id)
     telegram_user = TelegramUser.objects.filter(is_active=True).first()
 
