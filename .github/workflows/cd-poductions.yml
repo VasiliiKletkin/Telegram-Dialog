@@ -44,4 +44,5 @@ jobs:
           password: ${{ secrets.PRODUCTION_SSH_PASSWORD }}
           script: |
             cd /home/Telegram-Dialog/ 
+            git pull
             docker-compose -f docker-compose.prod.yml down && docker-compose -f docker-compose.prod.yml pull && docker-compose -f docker-compose.prod.yml up -d
