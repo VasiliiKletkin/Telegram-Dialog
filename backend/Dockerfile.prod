@@ -30,3 +30,5 @@ COPY . .
 RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /home/app/backend
 USER appuser
 
+RUN mkdir -p /home/app/backend/staticfiles && mkdir -p /home/app/backend/mediafiles
+RUN chmod -R 755 /home/app/backend/staticfiles && chmod -R 755 /home/app/backend/mediafiles
