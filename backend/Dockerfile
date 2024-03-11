@@ -9,19 +9,16 @@ RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 
 FROM python:3.12-slim
-
 EXPOSE 8000
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 
-COPY --from=requirements-stage /tmp/requirements.txt /code/requirements.txt
-
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
-
-
 WORKDIR /home/app/backend
+
+COPY --from=requirements-stage /tmp/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
 
 COPY . .
 
