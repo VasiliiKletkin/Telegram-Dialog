@@ -22,9 +22,7 @@ services:
 
   backend:
     container_name: backend
-    build:
-      context: ./backend
-      dockerfile: ./Dockerfile
+    image: kletkinvasilii/backend:latest
     env_file:
       - .env
     volumes:
@@ -50,9 +48,7 @@ services:
   #     - 5555:5555
 
   celery_sheduler:
-    build:
-      context: ./backend
-      dockerfile: ./Dockerfile
+    image: kletkinvasilii/backend:latest
     env_file:
       - ./.env
     volumes:
@@ -66,9 +62,7 @@ services:
 
 
   celery_worker:
-    build:
-      context: ./backend
-      dockerfile: ./Dockerfile
+    image: kletkinvasilii/backend:latest
     env_file:
       - ./.env
     volumes:
