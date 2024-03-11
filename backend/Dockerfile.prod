@@ -20,7 +20,7 @@ WORKDIR /home/app/backend
 COPY --from=requirements-stage /tmp/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
 
-COPY . .
+COPY ./backend /home/app/backend
 
 # RUN mkdir -p /home/app/backend/staticfiles && mkdir -p /home/app/backend/mediafiles
 # RUN chmod -R 755 /home/app/backend/staticfiles && chmod -R 755 /home/app/backend/mediafiles
