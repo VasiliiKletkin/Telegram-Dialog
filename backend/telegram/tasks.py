@@ -38,7 +38,7 @@ def check_user(id):
         telegram_user.error = str(error)
         telegram_user.is_active = False
     else:
-        telegram_user.error = {}
+        telegram_user.error = None
         telegram_user.is_active = True
     finally:
         telegram_user.save()
