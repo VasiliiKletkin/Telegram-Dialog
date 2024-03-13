@@ -1,4 +1,3 @@
-import json
 import requests
 from core.celery import app
 from .models import ProxyServer
@@ -6,10 +5,21 @@ from .models import ProxyServer
 
 @app.task
 def check_proxy(id):
-    proxy = ProxyServer.objects.get(id=id)
-    proxies = {'http': str(proxy)}
-    response = requests.get('http://www.httpbin.org/ip', proxies=proxies,)
-    resp_data = response.json()
-    proxy.is_active = True if resp_data["origin"] == proxy.address else False
-    proxy.info_check_proxy = json.dumps(resp_data)
-    proxy.save()
+    try:
+        proxy = ProxyServer.objects.get(id=id)
+        proxies = {'http': str(proxy)}
+        response = requests.get('http://www.httpbin.org/ip', proxies=proxies,)
+        resp_data = response.json()
+
+        if resp_data["origin"] == proxy.address:
+            raise Exception(f'Ip address{proxy.address} is not equal from http://www.httpbin.org/ip {resp_data["origin"]}')
+
+    except Exception as error:
+        proxy.is_active = False
+        proxy.error = str(error)
+    else:
+        proxy.error = None
+        proxy.is_active = False
+    finally:
+        proxy.save()
+    

@@ -1,4 +1,3 @@
-import json
 from asgiref.sync import async_to_sync
 from core.celery import app
 from django_telethon.sessions import DjangoSession
@@ -14,7 +13,13 @@ def check_user(id):
     try:
         telegram_user = TelegramUser.objects.get(id=id)
 
+        if not telegram_user.proxy_server:
+            raise Exception("Proxy does not exist")
+
         check_proxy(telegram_user.proxy_server_id)
+
+        if telegram_user.is_ready:
+            raise Exception("Proxy does not ready")
 
         @async_to_sync
         async def checking():
