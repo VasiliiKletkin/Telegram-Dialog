@@ -52,6 +52,7 @@ class Scene(TimeStampedModel):
     dialog = models.ForeignKey(
         Dialog, on_delete=models.CASCADE, related_name='scenes')
     group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
+    error = models.TextField()
 
     def __str__(self):
         return f"{self.dialog.name} {self.group.username}"

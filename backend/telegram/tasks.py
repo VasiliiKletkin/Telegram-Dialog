@@ -18,8 +18,8 @@ def check_user(id):
 
         check_proxy(telegram_user.proxy_server_id)
 
-        if telegram_user.is_ready:
-            raise Exception("Proxy does not ready")
+        if telegram_user.error:
+            raise Exception(f"Proxy does not ready:{telegram_user.proxy_server.error}")
 
         @async_to_sync
         async def checking():
@@ -36,6 +36,7 @@ def check_user(id):
 
             async with telegram_client:
                 await telegram_client.get_me()
+                await telegram_client.get_dialogs()
 
         checking()
 
