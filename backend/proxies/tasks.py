@@ -1,14 +1,21 @@
 import json
+import requests
 from core.celery import app
-from proxy_checker import ProxyChecker
 from .models import ProxyServer
+
+
+print()
 
 
 @app.task
 def check_proxy(id):
     proxy = ProxyServer.objects.get(id=id)
-    checker = ProxyChecker()
-    check_proxy = checker.check_proxy(f"{proxy.address}:{proxy.port}", user=proxy.username, password=proxy.password)
-    proxy.is_active = True if check_proxy else False
-    proxy.info_check_proxy = json.dumps(check_proxy)
+
+    proxies = {
+        'http': str(proxy)
+    }
+    response = requests.get('http://www.httpbin.org/ip', proxies=proxies,)
+    resp_data = response.json()
+    proxy.is_active = True if resp_data["origin"] == proxy.address else False
+    proxy.info_check_proxy = json.dumps(resp_data)
     proxy.save()
