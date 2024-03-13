@@ -44,6 +44,7 @@ class TelegramUser(TimeStampedModel):
         ProxyServer, on_delete=models.SET_NULL, null=True, blank=True)
 
     app_json = models.JSONField(null=True, blank=True)
+    error = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.id} - @{self.username} - {self.first_name}  {self.last_name}"

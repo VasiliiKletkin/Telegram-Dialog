@@ -1,3 +1,4 @@
+import json
 from asgiref.sync import async_to_sync
 from core.celery import app
 from django_telethon.sessions import DjangoSession
@@ -10,10 +11,11 @@ from .models import TelegramGroup, TelegramUser, TelegramGroupMessage
 
 @app.task()
 def check_user(id):
-    telegram_user = TelegramUser.objects.get(id=id)
-    check_proxy(telegram_user.proxy_server_id)
-
     try:
+        telegram_user = TelegramUser.objects.get(id=id)
+
+        check_proxy(telegram_user.proxy_server_id)
+
         @async_to_sync
         async def checking():
             telegram_client = TelegramClient(
@@ -25,16 +27,19 @@ def check_user(id):
             )
 
             if not telegram_client.is_user_authorized():
-                raise Exception
+                raise Exception("User is not authorized")
 
             async with telegram_client:
                 await telegram_client.get_me()
-                await telegram_client.get_dialogs()
+
         checking()
 
-        telegram_user.is_active = True
-    except Exception:
+    except Exception as error:
+        telegram_user.error = str(error)
         telegram_user.is_active = False
+    else:
+        telegram_user.error = {}
+        telegram_user.is_active = True
     finally:
         telegram_user.save()
 
