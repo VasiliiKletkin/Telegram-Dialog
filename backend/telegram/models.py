@@ -48,5 +48,6 @@ class TelegramUser(TimeStampedModel):
     def __str__(self):
         return f"{self.id} - @{self.username} - {self.first_name}  {self.last_name}"
 
-    def check_active(self):
-        return (self.proxy_server.check_active() and self.is_active) if self.proxy_server else False
+    @property
+    def is_ready(self):
+        return (self.proxy_server.is_ready and self.is_active) if self.proxy_server else False

@@ -56,12 +56,12 @@ class Scene(TimeStampedModel):
     def __str__(self):
         return f"{self.dialog.name} {self.group.username}"
 
-    def check_active(self):
+    @property
+    def is_ready(self):
         roles = self.roles.all()
-        telegram_users = TelegramUser.objects.filter(
-            role__in=roles).distinct()
-        are_users_active = all(user.check_active() for user in telegram_users)
-        return are_users_active and roles.count() == self.dialog.get_roles_count()
+        telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
+        are_users_active = all(user.is_ready for user in telegram_users)
+        return are_users_active and roles.count() == self.dialog.get_roles_count() and self.is_active
 
 
 class Role(TimeStampedModel):

@@ -13,7 +13,8 @@ class ProxyServer(TimeStampedModel):
 
     info_check_proxy = models.JSONField(null=True, blank=True)
 
-    def check_active(self):
+    @property
+    def is_ready(self):
         return self.is_active
 
     def __str__(self):

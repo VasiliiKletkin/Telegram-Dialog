@@ -14,9 +14,6 @@ def check_user(id):
     check_proxy(telegram_user.proxy_server_id)
 
     try:
-        if not telegram_user.check_active():
-            raise Exception("telegram user in not active")
-
         @async_to_sync
         async def checking():
             telegram_client = TelegramClient(
@@ -46,9 +43,6 @@ def check_user(id):
 def send_message(telegram_user_id, chat_id, message):
     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
 
-    if not telegram_user.check_active():
-        raise Exception("telegram user in not active")
-
     @async_to_sync
     async def send_mess():
         telegram_client = TelegramClient(
@@ -66,9 +60,6 @@ def send_message(telegram_user_id, chat_id, message):
 @app.task()
 def join_to_chat(telegram_user_id, chat_id):
     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
-
-    if not telegram_user.check_active():
-        raise Exception("telegram user in not active")
 
     @async_to_sync
     async def join():
@@ -88,9 +79,6 @@ def join_to_chat(telegram_user_id, chat_id):
 def get_messages_from_group(id):
     telegram_group = TelegramGroup.objects.get(id=id)
     telegram_user = TelegramUser.objects.filter(is_active=True).first()
-
-    if not telegram_user.check_active():
-        raise Exception("telegram user in not active")
 
     @async_to_sync
     async def get_mess():
