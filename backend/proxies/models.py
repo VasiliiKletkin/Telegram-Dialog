@@ -11,7 +11,7 @@ class ProxyServer(TimeStampedModel):
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
 
-    error = models.TextField()
+    error = models.TextField(null=True, blank=True)
 
     @property
     def is_ready(self):
