@@ -19,6 +19,6 @@ def check_proxy(id):
         proxy.is_active = False
     else:
         proxy.error = None
-        proxy.is_active = False
+        proxy.is_active = True
     finally:
         proxy.save()
