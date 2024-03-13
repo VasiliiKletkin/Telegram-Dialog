@@ -13,15 +13,15 @@ def check_scene(id):
 
     roles = scene.roles.all()
     telegram_users = TelegramUser.objects.filter(
-        role__in=roles).distinct()
+        roles__in=roles).distinct()
 
     for user in telegram_users:
         check_user(user.id)
 
     try:
-
         if roles.count() != scene.dialog.get_roles_count():
-            raise Exception("Roles of Dialog are not equal roles of dialog")
+            raise Exception(
+                "Count of roles of Dialog are not equal count of roles of scene")
 
         users_with_problems = telegram_users.filter(is_active=False)
         if users_with_problems.exists():
@@ -55,7 +55,7 @@ def start_scene(id):
 
     for message in scene.dialog.messages.all():
         role = scene.roles.get(role=message.role)
-        
+
         # target_time = timezone.now() + timedelta(minutes=5)
 
         # clocked_schedule = ClockedSchedule.objects.create(clocked_time=target_time)
@@ -69,6 +69,5 @@ def start_scene(id):
         #     args=[3, 7]
         # )
 
-        send_message.delay(role.telegram_user.id, scene.group.username, message.text)
-
-
+        send_message.delay(role.telegram_user.id,
+                           scene.group.username, message.text)

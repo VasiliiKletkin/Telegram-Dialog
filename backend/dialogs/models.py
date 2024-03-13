@@ -52,7 +52,7 @@ class Scene(TimeStampedModel):
     dialog = models.ForeignKey(
         Dialog, on_delete=models.CASCADE, related_name='scenes')
     group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
-    error = models.TextField()
+    error = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.dialog.name} {self.group.username}"
@@ -60,7 +60,8 @@ class Scene(TimeStampedModel):
     @property
     def is_ready(self):
         roles = self.roles.all()
-        telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
+        telegram_users = TelegramUser.objects.filter(
+            roles__in=roles).distinct()
         are_users_active = all(user.is_ready for user in telegram_users)
         return are_users_active and roles.count() == self.dialog.get_roles_count() and self.is_active
 

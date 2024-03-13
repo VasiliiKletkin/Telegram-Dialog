@@ -17,8 +17,9 @@ def check_user(id):
             raise Exception("Proxy does not exist")
 
         check_proxy(telegram_user.proxy_server_id)
+        telegram_user.proxy_server.refresh_from_db()
 
-        if telegram_user.error:
+        if telegram_user.is_active:
             raise Exception(f"Proxy is not ready:{telegram_user.proxy_server.error}")
 
         @async_to_sync
