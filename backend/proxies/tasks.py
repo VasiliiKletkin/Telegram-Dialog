@@ -11,15 +11,14 @@ def check_proxy(id):
         response = requests.get('http://www.httpbin.org/ip', proxies=proxies,)
         resp_data = response.json()
 
-        if resp_data["origin"] == proxy.address:
+        if resp_data["origin"] != proxy.address:
             raise Exception(f'Ip address{proxy.address} is not equal from http://www.httpbin.org/ip {resp_data["origin"]}')
 
     except Exception as error:
-        proxy.is_active = False
         proxy.error = str(error)
+        proxy.is_active = False
     else:
         proxy.error = None
         proxy.is_active = False
     finally:
         proxy.save()
-    
