@@ -47,7 +47,6 @@ def check_scene(id):
 
 @app.task()
 def start_scene(id):
-    check_scene(id)
     scene = Scene.objects.get(id=id)
 
     if not scene.is_ready:
