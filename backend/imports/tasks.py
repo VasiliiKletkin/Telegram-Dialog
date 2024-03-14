@@ -30,6 +30,7 @@ def convert_to_orm(id):
             'first_name': json_data['first_name'],
             'last_name': json_data['last_name'],
             'phone': json_data["phone"],
+            'two_fa': json_data["twoFA"],
             'app_json': json_data,
             'app': app,
             'client_session': client_session,

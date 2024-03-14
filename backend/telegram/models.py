@@ -34,7 +34,8 @@ class TelegramUser(TimeStampedModel):
         default="", max_length=64, null=True, blank=True)
     last_name = models.CharField(
         default="", max_length=64, null=True, blank=True)
-    phone = models.CharField(max_length=30, null=True, blank=True)
+    phone = models.CharField(max_length=30)
+    two_fa = models.CharField(max_length=30)
 
     app = models.ForeignKey(
         App, on_delete=models.CASCADE)
