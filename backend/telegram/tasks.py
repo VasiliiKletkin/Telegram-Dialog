@@ -19,7 +19,7 @@ def check_user(id):
         check_proxy(telegram_user.proxy_server_id)
         telegram_user.proxy_server.refresh_from_db()
 
-        if telegram_user.proxy_server.is_ready:
+        if not telegram_user.proxy_server.is_ready:
             raise Exception(f"Proxy is not ready:{telegram_user.proxy_server.error}")
 
         @async_to_sync
