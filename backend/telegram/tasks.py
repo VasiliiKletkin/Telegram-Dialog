@@ -32,9 +32,6 @@ def check_user(id):
                 proxy=telegram_user.proxy_server.get_proxy_dict(),
             )
 
-            if not telegram_client.is_user_authorized():
-                raise Exception("User is not authorized")
-
             await telegram_client.start(phone=telegram_user.phone, password=telegram_user.two_fa)
 
             async with telegram_client:
