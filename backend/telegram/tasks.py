@@ -19,7 +19,7 @@ def check_user(id):
         check_proxy(telegram_user.proxy_server_id)
         telegram_user.proxy_server.refresh_from_db()
 
-        if telegram_user.is_active:
+        if telegram_user.proxy_server.is_ready:
             raise Exception(f"Proxy is not ready:{telegram_user.proxy_server.error}")
 
         @async_to_sync
@@ -30,10 +30,12 @@ def check_user(id):
                 api_id=telegram_user.app.api_id,
                 api_hash=telegram_user.app.api_hash,
                 proxy=telegram_user.proxy_server.get_proxy_dict(),
-            ).start(phone=telegram_user.phone, password=telegram_user.two_fa)
+            )
 
             if not telegram_client.is_user_authorized():
                 raise Exception("User is not authorized")
+
+            await telegram_client.start(phone=telegram_user.phone, password=telegram_user.two_fa)
 
             async with telegram_client:
                 await telegram_client.get_me()
