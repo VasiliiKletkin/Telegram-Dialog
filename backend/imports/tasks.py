@@ -20,17 +20,17 @@ def convert_to_orm(id):
     )
 
     client_session, cs_is_created = ClientSession.objects.update_or_create(
-        name=json_data['session_file'],
+        name=json_data['id'],
     )
 
     TelegramUser.objects.update_or_create(
         id=json_data['id'],
         defaults={
-            'username': json_data['username'],
-            'first_name': json_data['first_name'],
-            'last_name': json_data['last_name'],
-            'phone': json_data["phone"],
-            'two_fa': json_data["twoFA"],
+            'username': json_data.get('username'),
+            'first_name': json_data.get('first_name'),
+            'last_name': json_data.get('last_name'),
+            'phone': json_data.get("phone"),
+            'two_fa': json_data.get("twoFA"),
             'app_json': json_data,
             'app': app,
             'client_session': client_session,
