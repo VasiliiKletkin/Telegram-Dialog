@@ -36,7 +36,6 @@ def check_user(id):
 
             async with telegram_client:
                 await telegram_client.get_me()
-                await telegram_client.get_dialogs()
 
         checking()
 
