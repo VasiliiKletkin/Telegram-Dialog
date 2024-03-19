@@ -39,7 +39,7 @@ class TelegramUser(TimeStampedModel):
 
     proxy_server = models.OneToOneField(
         ProxyServer,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="telegram_user",
