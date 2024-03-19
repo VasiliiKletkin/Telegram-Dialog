@@ -14,13 +14,13 @@ def convert_to_orm(id):
     tup = TelegramUserImport.objects.get(id=id)
     json_data = json.loads(tup.json_field.read())
 
-    app, app_is_created = App.objects.update_or_create(
+    app, app_is_created = App.objects.get_or_create(
         api_id=str(json_data['app_id']),
         api_hash=str(json_data['app_hash'])
     )
 
-    client_session, cs_is_created = ClientSession.objects.update_or_create(
-        name=json_data['id'],
+    client_session, cs_is_created = ClientSession.objects.get_or_create(
+        name=json_data["phone"],
     )
 
     TelegramUser.objects.update_or_create(
@@ -29,8 +29,8 @@ def convert_to_orm(id):
             'username': json_data.get('username'),
             'first_name': json_data.get('first_name'),
             'last_name': json_data.get('last_name'),
-            'phone': json_data.get("phone"),
-            'two_fa': json_data.get("twoFA"),
+            'phone': json_data["phone"],
+            'two_fa': json_data["twoFA"],
             'app_json': json_data,
             'app': app,
             'client_session': client_session,

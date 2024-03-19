@@ -34,7 +34,7 @@ class TelegramUser(TimeStampedModel):
     phone = models.CharField(max_length=30, null=True, blank=True)
     two_fa = models.CharField(max_length=30, null=True, blank=True)
 
-    app = models.OneToOneField(App, on_delete=models.CASCADE)
+    app = models.ForeignKey(App, on_delete=models.CASCADE)
     client_session = models.OneToOneField(ClientSession, on_delete=models.CASCADE)
 
     proxy_server = models.OneToOneField(
