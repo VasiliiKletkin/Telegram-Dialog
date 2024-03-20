@@ -1,11 +1,14 @@
+import time
 from asgiref.sync import async_to_sync
 from core.celery import app
 from django_telethon.sessions import DjangoSession
 from proxies.tasks import check_proxy
 from telethon.sync import TelegramClient
 from telethon.tl.functions.channels import JoinChannelRequest
-
+from django_telethon.models import UpdateState
+from django.conf import settings
 from .models import TelegramGroup, TelegramUser, TelegramGroupMessage
+import random
 
 
 @app.task()
@@ -25,14 +28,15 @@ def check_user(id):
         @async_to_sync
         async def checking():
             telegram_client = TelegramClient(
-                session=DjangoSession(
-                    client_session=telegram_user.client_session),
+                session=DjangoSession(client_session=telegram_user.client_session),
                 api_id=telegram_user.app.api_id,
                 api_hash=telegram_user.app.api_hash,
                 proxy=telegram_user.proxy_server.get_proxy_dict(),
             )
-
-            await telegram_client.start(phone=telegram_user.phone, password=telegram_user.two_fa)
+            UpdateState.objects.filter(id=0).delete()
+            await telegram_client.start(
+                phone=telegram_user.phone, password=telegram_user.two_fa
+            )
 
             async with telegram_client:
                 await telegram_client.get_me()
@@ -54,6 +58,12 @@ def check_user(id):
 def send_message(telegram_user_id, chat_id, message):
     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
 
+    symbols_per_sec = (
+        random.randint(settings.MIN_SYMBOLS_PER_MIN, settings.MAX_SYMBOLS_PER_MIN) / 60
+    )
+    wait_time = len(message) / symbols_per_sec
+    time.sleep(wait_time)
+
     @async_to_sync
     async def send_mess():
         telegram_client = TelegramClient(
@@ -65,6 +75,7 @@ def send_message(telegram_user_id, chat_id, message):
         async with telegram_client:
             chat = await telegram_client.get_entity(chat_id)
             await telegram_client.send_message(chat, message)
+
     send_mess()
 
 
@@ -83,6 +94,7 @@ def join_to_chat(telegram_user_id, chat_id):
         async with telegram_client:
             chat = await telegram_client.get_entity(chat_id)
             await telegram_client(JoinChannelRequest(chat))
+
     join()
 
 
@@ -94,8 +106,7 @@ def get_messages_from_group(id):
     @async_to_sync
     async def get_mess():
         telegram_client = TelegramClient(
-            session=DjangoSession(
-                client_session=telegram_user.client_session),
+            session=DjangoSession(client_session=telegram_user.client_session),
             api_id=telegram_user.app.api_id,
             api_hash=telegram_user.app.api_hash,
             proxy=telegram_user.proxy_server.get_proxy_dict(),
@@ -103,6 +114,13 @@ def get_messages_from_group(id):
         async with telegram_client:
             group = await telegram_client.get_entity(telegram_group.username)
             for message in await telegram_client.iter_messages(group, 1000):
-                TelegramGroupMessage.objects.create(message_id=message.id, user_id=message.from_id.user_id, group=telegram_group,
-                                                    message=message.text, reply_to_msg_id=message.reply_to.reply_to_msg_id, date=message.date)
+                TelegramGroupMessage.objects.create(
+                    message_id=message.id,
+                    user_id=message.from_id.user_id,
+                    group=telegram_group,
+                    message=message.text,
+                    reply_to_msg_id=message.reply_to.reply_to_msg_id,
+                    date=message.date,
+                )
+
     get_mess()
