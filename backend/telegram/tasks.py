@@ -75,8 +75,7 @@ def send_message(telegram_user_id, chat_id, message):
         UpdateState.objects.all().delete()
         async with telegram_client:
             chat = await telegram_client.get_entity(chat_id)
-            message = await telegram_client.send_message(chat, message)
-        return message.id
+            await telegram_client.send_message(chat, message)
 
     send_mess()
 
