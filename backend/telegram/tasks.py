@@ -72,9 +72,11 @@ def send_message(telegram_user_id, chat_id, message):
             api_hash=telegram_user.app.api_hash,
             proxy=telegram_user.proxy_server.get_proxy_dict(),
         )
+        UpdateState.objects.filter(id=0).delete()
         async with telegram_client:
             chat = await telegram_client.get_entity(chat_id)
-            await telegram_client.send_message(chat, message)
+            message = await telegram_client.send_message(chat, message)
+        return message.id
 
     send_mess()
 
@@ -91,6 +93,7 @@ def join_to_chat(telegram_user_id, chat_id):
             api_hash=telegram_user.app.api_hash,
             proxy=telegram_user.proxy_server.get_proxy_dict(),
         )
+        UpdateState.objects.filter(id=0).delete()
         async with telegram_client:
             chat = await telegram_client.get_entity(chat_id)
             await telegram_client(JoinChannelRequest(chat))
@@ -111,6 +114,7 @@ def get_messages_from_group(id):
             api_hash=telegram_user.app.api_hash,
             proxy=telegram_user.proxy_server.get_proxy_dict(),
         )
+        UpdateState.objects.filter(id=0).delete()
         async with telegram_client:
             group = await telegram_client.get_entity(telegram_group.username)
             for message in await telegram_client.iter_messages(group, 1000):
