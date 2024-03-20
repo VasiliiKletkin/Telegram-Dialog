@@ -52,6 +52,7 @@ def start_scene(id):
     if not scene.is_ready:
         raise Exception("scene in not ready")
 
+    msg = None
     for message in scene.dialog.messages.all():
         role = scene.roles.get(role=message.role)
 
@@ -67,6 +68,6 @@ def start_scene(id):
         #     task="telegram.tasks.send_message",
         #     args=[3, 7]
         # )
-
-        send_message.delay(role.telegram_user.id,
-                           scene.group.username, message.text)
+        msg_id = msg.id if msg else None
+        msg = send_message(role.telegram_user.id,
+                           scene.group.username, message.text, reply_to_msg_id=msg_id)

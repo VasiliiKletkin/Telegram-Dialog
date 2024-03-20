@@ -55,7 +55,7 @@ def check_user(id):
 
 
 @app.task()
-def send_message(telegram_user_id, chat_id, message):
+def send_message(telegram_user_id, chat_id, message, reply_to_msg_id=None):
     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
 
     symbols_per_sec = (
@@ -75,9 +75,12 @@ def send_message(telegram_user_id, chat_id, message):
         UpdateState.objects.all().delete()
         async with telegram_client:
             chat = await telegram_client.get_entity(chat_id)
-            await telegram_client.send_message(chat, message)
+            msg = await telegram_client.send_message(
+                chat, message, reply_to=reply_to_msg_id
+            )
+        return msg
 
-    send_mess()
+    return send_mess()
 
 
 @app.task()
