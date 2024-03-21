@@ -1,11 +1,11 @@
 from django.contrib import admin, messages
 
 from .models import TelegramGroup, TelegramUser, TelegramGroupMessage
-from .tasks import check_user, get_messages_from_group
+from .tasks import check_user, get_messages_from_group, generate_dialogs_from_group
 
 
 class TelegramGroupAdmin(admin.ModelAdmin):
-    actions = ["get_messages"]
+    actions = ["get_messages", "generate_dialogs"]
     # list_display = ("__str__")
 
     def get_messages(self, request, queryset):
@@ -14,6 +14,13 @@ class TelegramGroupAdmin(admin.ModelAdmin):
             get_messages_from_group(obj.id)
 
     get_messages.short_description = "Parse messages"
+
+    def generate_dialogs(self, request, queryset):
+        messages.add_message(request, messages.INFO, "Generate dialogs from group...")
+        for obj in queryset:
+            generate_dialogs_from_group(obj.id)
+
+    generate_dialogs.short_description = "Generate dialogs"
 
 
 class TelegramUserAdmin(admin.ModelAdmin):
@@ -29,7 +36,8 @@ class TelegramUserAdmin(admin.ModelAdmin):
 
 
 class TelegramGroupMessageAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ("text", "reply_to_msg_id")
+    ordering = ("-date",)
 
 
 admin.site.register(TelegramGroupMessage, TelegramGroupMessageAdmin)

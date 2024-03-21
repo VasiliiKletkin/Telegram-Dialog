@@ -12,8 +12,7 @@ def check_scene(id):
     scene = Scene.objects.get(id=id)
 
     roles = scene.roles.all()
-    telegram_users = TelegramUser.objects.filter(
-        roles__in=roles).distinct()
+    telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
 
     for user in telegram_users:
         check_user(user.id)
@@ -21,19 +20,23 @@ def check_scene(id):
     try:
         if roles.count() != scene.dialog.get_roles_count():
             raise Exception(
-                "Count of roles of Dialog are not equal count of roles of scene")
+                "Count of roles of Dialog are not equal count of roles of scene"
+            )
 
         users_with_problems = telegram_users.filter(is_active=False)
         if users_with_problems.exists():
             errors = ""
             for user in users_with_problems:
-                errors += user.error + '\n'
+                errors += user.error + "\n"
             raise Exception(f"Some user(s) have problems:{errors}")
 
         for user in telegram_users:
             # FIXME change on more better option
-            if not user.client_session.entity_set.filter(Q(name=scene.group.name) | Q(username=scene.group.username)).exists():
-                join_to_chat(user.id, scene.group.username)
+            if not user.client_session.entity_set.filter(
+                Q(name=scene.telegram_group.name)
+                | Q(username=scene.telegram_group.username)
+            ).exists():
+                join_to_chat(user.id, scene.telegram_group.username)
 
     except Exception as error:
         scene.error = str(error)
@@ -69,5 +72,9 @@ def start_scene(id):
         #     args=[3, 7]
         # )
         msg_id = msg.id if msg else None
-        msg = send_message(role.telegram_user.id,
-                           scene.group.username, message.text, reply_to_msg_id=msg_id)
+        msg = send_message(
+            role.telegram_user.id,
+            scene.telegram_group.username,
+            message.text,
+            reply_to_msg_id=msg_id,
+        )

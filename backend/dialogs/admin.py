@@ -18,7 +18,7 @@ class RoleInlineAdmin(admin.TabularInline):
 
 
 class SceneAdmin(admin.ModelAdmin):
-    list_display = ('dialog', 'group', 'is_active')
+    list_display = ('dialog', 'telegram_group', 'is_active')
     inlines = [RoleInlineAdmin]
     actions = ['start', 'check_obj']
 

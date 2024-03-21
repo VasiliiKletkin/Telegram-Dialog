@@ -11,6 +11,8 @@ from telethon.sync import TelegramClient
 from telethon.tl.functions.channels import JoinChannelRequest
 from telethon.tl.types import PeerUser
 from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
+from dialogs.models import Dialog, Message
+from django.db.models import Count
 
 
 @app.task()
@@ -122,20 +124,85 @@ def get_messages_from_group(id):
         async with telegram_client:
             group = await telegram_client.get_entity(telegram_group.username)
             async for message in telegram_client.iter_messages(group, 1000):
-                if isinstance(message.from_id, PeerUser):
-                    TelegramGroupMessage.objects.get_or_create(
-                        message_id=message.id,
-                        group=telegram_group,
-                        defaults={
-                            "text": message.text,
-                            "date": message.date,
-                            "user_id": message.from_id.user_id,
-                            "reply_to_msg_id": (
-                                message.reply_to.reply_to_msg_id
-                                if message.reply_to
-                                else None
-                            ),
-                        },
-                    )
+                TelegramGroupMessage.objects.get_or_create(
+                    message_id=message.id,
+                    telegram_group=telegram_group,
+                    defaults={
+                        "text": message.text,
+                        "date": message.date,
+                        "user_id": (
+                            message.from_id.user_id
+                            if message.from_id and hasattr(message.from_id, "user_id")
+                            else None
+                        ),
+                        "reply_to_msg_id": (
+                            message.reply_to.reply_to_msg_id
+                            if message.reply_to
+                            else None
+                        ),
+                    },
+                )
 
     get_mess()
+
+
+def get_answer_from_message(all_messages_from_group, ask_message):
+    answer_messages = all_messages_from_group.filter(
+        reply_to_msg_id=ask_message.message_id
+    )
+    return {
+        msg: get_answer_from_message(all_messages_from_group, msg)
+        for msg in answer_messages
+    }
+
+
+def create_messages(dialog_id, messages_dict, reply_to_msg_id=None):
+    msgs = []
+    if isinstance(messages_dict, dict) and messages_dict == {}:
+        return msgs
+    for message, reply_messages in messages_dict.items():
+        msg, created = Message.objects.get_or_create(
+            dialog_id=dialog_id,
+            role=message.user_id if message.user_id else 1,
+            text=message.text,
+            defaults={
+                # "time": message.date,
+                "reply_to_msg_id": reply_to_msg_id,
+            },
+        )
+        msgs.append(msg)
+        msgs.extend(create_messages(dialog_id, reply_messages, reply_to_msg_id=msg.id))
+    return msgs
+
+
+@app.task()
+def generate_dialogs_from_group(id):
+    telegram_group = TelegramGroup.objects.get(id=id)
+    messages_from_group = telegram_group.messages.all()
+
+    answers_messages_ids = list(
+        messages_from_group.values_list("reply_to_msg_id", flat=True)
+        .annotate(count=Count("id"))
+        .filter(count__gte=1)
+    )
+
+    messages_with_reply = messages_from_group.filter(
+        message_id__in=answers_messages_ids, reply_to_msg_id__isnull=True
+    )
+
+    dialogs = {}
+    for msg in messages_with_reply:
+        key = f"{telegram_group.name}:{msg.text[:20]}:{msg.user_id}"
+
+        # это нужно на тот случай если для полного диалоги для вопроса нужен контекст
+        # closely_messages = messages_from_group.filter( 
+        #     message_id__in=range(message.message_id - 2, message.message_id + 2) 
+        # )
+
+        dialogs[key] = {msg: get_answer_from_message(messages_from_group, msg)}
+
+        dialog, created = Dialog.objects.get_or_create(
+            name=key[:255], defaults={"is_active": False}
+        )
+
+        create_messages(dialog.id, dialogs[key])
