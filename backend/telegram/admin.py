@@ -1,11 +1,19 @@
 from django.contrib import admin, messages
 
 from .models import TelegramGroup, TelegramUser, TelegramGroupMessage
-from .tasks import check_user
+from .tasks import check_user, get_messages_from_group
 
 
 class TelegramGroupAdmin(admin.ModelAdmin):
-    pass
+    actions = ["get_messages"]
+    # list_display = ("__str__")
+
+    def get_messages(self, request, queryset):
+        messages.add_message(request, messages.INFO, "Parse messages from group...")
+        for obj in queryset:
+            get_messages_from_group(obj.id)
+
+    get_messages.short_description = "Parse messages"
 
 
 class TelegramUserAdmin(admin.ModelAdmin):

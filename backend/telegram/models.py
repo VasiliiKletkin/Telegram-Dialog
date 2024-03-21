@@ -15,13 +15,16 @@ class TelegramGroup(TimeStampedModel):
 class TelegramGroupMessage(models.Model):
     group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
     message_id = models.BigIntegerField()
-    user_id = models.BigIntegerField()
-    reply_to_msg_id = models.BigIntegerField()
-    message = models.TextField()
+    text = models.TextField()
     date = models.DateTimeField()
+    user_id = models.BigIntegerField(null=True, blank=True)
+    reply_to_msg_id = models.BigIntegerField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ("group", "message_id")
 
     def __str__(self):
-        return f"{self.group} - {self.message}"
+        return f"{self.group} - {self.text[:20]}"
 
 
 class TelegramUser(TimeStampedModel):

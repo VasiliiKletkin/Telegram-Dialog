@@ -1,14 +1,16 @@
+import random
 import time
+
 from asgiref.sync import async_to_sync
 from core.celery import app
+from django.conf import settings
+from django_telethon.models import UpdateState
 from django_telethon.sessions import DjangoSession
 from proxies.tasks import check_proxy
 from telethon.sync import TelegramClient
 from telethon.tl.functions.channels import JoinChannelRequest
-from django_telethon.models import UpdateState
-from django.conf import settings
-from .models import TelegramGroup, TelegramUser, TelegramGroupMessage
-import random
+from telethon.tl.types import PeerUser
+from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
 
 
 @app.task()
@@ -119,14 +121,21 @@ def get_messages_from_group(id):
         UpdateState.objects.all().delete()
         async with telegram_client:
             group = await telegram_client.get_entity(telegram_group.username)
-            for message in await telegram_client.iter_messages(group, 1000):
-                TelegramGroupMessage.objects.create(
-                    message_id=message.id,
-                    user_id=message.from_id.user_id,
-                    group=telegram_group,
-                    message=message.text,
-                    reply_to_msg_id=message.reply_to.reply_to_msg_id,
-                    date=message.date,
-                )
+            async for message in telegram_client.iter_messages(group, 1000):
+                if isinstance(message.from_id, PeerUser):
+                    TelegramGroupMessage.objects.get_or_create(
+                        message_id=message.id,
+                        group=telegram_group,
+                        defaults={
+                            "text": message.text,
+                            "date": message.date,
+                            "user_id": message.from_id.user_id,
+                            "reply_to_msg_id": (
+                                message.reply_to.reply_to_msg_id
+                                if message.reply_to
+                                else None
+                            ),
+                        },
+                    )
 
     get_mess()
