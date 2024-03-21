@@ -4,26 +4,26 @@ from telegram.models import TelegramGroup, TelegramUser
 
 
 ROLES = (
-    (1, "role-1"),
-    (2, "role-2"),
-    (3, "role-3"),
-    (4, "role-4"),
-    (5, "role-5"),
-    (6, "role-6"),
-    (7, "role-7"),
-    (8, "role-8"),
-    (9, "role-9"),
-    (10, "role-10"),
-    (11, "role-11"),
-    (12, "role-12"),
-    (13, "role-13"),
-    (14, "role-14"),
-    (15, "role-15"),
-    (16, "role-16"),
-    (17, "role-17"),
-    (18, "role-18"),
-    (19, "role-19"),
-    (20, "role-20"),
+    (1, "Role 1"),
+    (2, "Role 2"),
+    (3, "Role 3"),
+    (4, "Role 4"),
+    (5, "Role 5"),
+    (6, "Role 6"),
+    (7, "Role 7"),
+    (8, "Role 8"),
+    (9, "Role 9"),
+    (10, "Role 10"),
+    (11, "Role 11"),
+    (12, "Role 12"),
+    (13, "Role 13"),
+    (14, "Role 14"),
+    (15, "Role 15"),
+    (16, "Role 16"),
+    (17, "Role 17"),
+    (18, "Role 18"),
+    (19, "Role 19"),
+    (20, "Role 20"),
 )
 
 
@@ -44,9 +44,12 @@ class Message(TimeStampedModel):
     )
     role = models.PositiveIntegerField(choices=ROLES)
     text = models.TextField()
+    reply_to_msg = models.ForeignKey(
+        "Message", on_delete=models.CASCADE, null=True, blank=True
+    )
 
     def __str__(self):
-        return self.text[:20]
+        return f"{self.id}:{self.get_role_display()}: {self.text[:10]}"
 
 
 class Scene(TimeStampedModel):
