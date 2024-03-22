@@ -16,7 +16,7 @@ class Dialog(TimeStampedModel):
 
     @property
     def roles_count(self):
-        return self.messages.values("role").distinct().count()
+        return self.messages.values("role_name").distinct().count()
 
 
 class Message(TimeStampedModel):
@@ -31,7 +31,7 @@ class Message(TimeStampedModel):
     )
 
     def __str__(self):
-        return f"{self.id}:{self.role}: {self.text[:10]}"
+        return f"{self.id}:{self.role_name}: {self.text[:10]}"
 
 
 class Scene(TimeStampedModel):
@@ -45,20 +45,10 @@ class Scene(TimeStampedModel):
 
     @property
     def is_ready(self):
-        roles = self.roles.all()
-        telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
-        are_users_active = all(user.is_ready for user in telegram_users)
-        are_users_members_of_group = all(
-            user.client_session.entity_set.filter(
-                Q(name=self.telegram_group.name)
-                | Q(username=self.telegram_group.username)
-            ).exists()
-            for user in telegram_users
-        )
         return (
             self.roles_count == self.dialog.roles_count
-            and are_users_active
-            and are_users_members_of_group
+            and self.are_users_ready
+            and self.are_users_members_of_group
             and self.is_active
         )
 
@@ -66,10 +56,23 @@ class Scene(TimeStampedModel):
     def roles_count(self):
         return self.roles.count()
 
-    # def clean(self) -> None:
-    #     self.dialog.
+    @property
+    def are_users_ready(self):
+        roles = self.roles.all()
+        telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
+        return all(user.is_ready for user in telegram_users)
 
-    #     return super().clean()
+    @property
+    def are_users_members_of_group(self):
+        roles = self.roles.all()
+        telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
+        return all(
+            user.client_session.entity_set.filter(
+                Q(name=self.telegram_group.name)
+                | Q(username=self.telegram_group.username)
+            ).exists()
+            for user in telegram_users
+        )
 
 
 class Role(TimeStampedModel):
