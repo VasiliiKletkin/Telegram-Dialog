@@ -1,7 +1,7 @@
 from dal import autocomplete
 from django.forms import ModelForm
 
-from .models import Role
+from .models import Role, Message, Scene
 
 
 class RoleInlineForm(ModelForm):
@@ -14,5 +14,28 @@ class RoleInlineForm(ModelForm):
             ),
             "telegram_user": autocomplete.ModelSelect2(
                 url="telegram_user-autocomplete"
+            ),
+        }
+
+
+class MessageInlineForm(ModelForm):
+    class Meta:
+        model = Message
+        fields = "__all__"
+        widgets = {
+            "reply_to_msg": autocomplete.ListSelect2(url="reply_to_msg-autocomplete"),
+        }
+
+
+class SceneForm(ModelForm):
+    class Meta:
+        model = Scene
+        fields = "__all__"
+        widgets = {
+            "dialog": autocomplete.ModelSelect2(
+                url="dialog-autocomplete",
+            ),
+            "telegram_group": autocomplete.ModelSelect2(
+                url="telegram_group-autocomplete"
             ),
         }

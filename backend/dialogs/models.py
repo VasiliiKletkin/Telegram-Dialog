@@ -3,13 +3,14 @@ from django.db.models import Q
 from model_utils.models import TimeStampedModel
 from telegram.models import TelegramGroup, TelegramUser
 from taggit.managers import TaggableManager
+from datetime import time
 
 
 class Dialog(TimeStampedModel):
     is_active = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
 
-    tags = TaggableManager()
+    # tags = TaggableManager(null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} {self.roles_count} roles"
@@ -25,7 +26,7 @@ class Message(TimeStampedModel):
     )
     role_name = models.CharField(max_length=255)
     text = models.TextField()
-    time = models.TimeField()
+    time = models.TimeField(default=time(0))
     reply_to_msg = models.ForeignKey(
         "Message", on_delete=models.CASCADE, null=True, blank=True
     )

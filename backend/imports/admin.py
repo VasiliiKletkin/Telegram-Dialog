@@ -10,7 +10,7 @@ class TelegramUserImportAdmin(admin.ModelAdmin):
     def convert(self, request, queryset):
         messages.add_message(request, messages.INFO, 'Converting...')
         for obj in queryset:
-            convert_to_orm.delay(obj.id)
+            convert_to_orm(obj.id)
     convert.short_description = "Convert to ORM"
 
 

@@ -23,13 +23,13 @@ def convert_to_orm(id):
         name=json_data["phone"],
     )
 
-    TelegramUser.objects.update_or_create(
+    TelegramUser.objects.get_or_create(
         id=json_data['id'],
         defaults={
             'username': json_data.get('username'),
             'first_name': json_data.get('first_name'),
             'last_name': json_data.get('last_name'),
-            'phone': json_data.get["phone"],
+            'phone': json_data.get("phone"),
             'sex': json_data.get("sex"),
             'two_fa': json_data["twoFA"],
             'app_json': json_data,

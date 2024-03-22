@@ -2,9 +2,8 @@ from core.celery import app
 from django.db.models import Q
 from django_celery_beat.models import ClockedSchedule, PeriodicTask
 from telegram.models import TelegramUser
-from telegram.tasks import check_user, join_to_chat, send_message
+from telegram.tasks import check_user, join_to_chat
 from django.utils import timezone
-from datetime import timedelta
 from .models import Scene
 
 
@@ -23,8 +22,8 @@ def check_scene(id):
 
         for user in telegram_users:
             check_user(user.id)
-            if not user.is_active:
-                raise Exception(f"User {user} is not active")
+            if not user.is_ready:
+                raise Exception(f"User {user} is not ready")
 
             if not user.client_session.entity_set.filter(
                 Q(name=scene.telegram_group.name)
