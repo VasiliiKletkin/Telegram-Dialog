@@ -150,10 +150,18 @@ def get_answer_from_message(all_messages_from_group, ask_message):
     answer_messages = all_messages_from_group.filter(
         reply_to_msg_id=ask_message.message_id
     )
-    return {
-        msg: get_answer_from_message(all_messages_from_group, msg)
-        for msg in answer_messages
-    }
+    dialogs_dict = {}
+    for msg in answer_messages:
+        dialogs_dict[msg] = get_answer_from_message(all_messages_from_group, msg)
+
+        context_messages = all_messages_from_group.filter(
+            message_id__in=range(msg.message_id + 1, msg.message_id + 3),
+            user_id=msg.user_id,
+            reply_to_msg_id__isnull=True,
+        )
+        for m in context_messages:
+            dialogs_dict[m] = get_answer_from_message(all_messages_from_group, m)
+    return dialogs_dict
 
 
 def create_messages(dialog_id, messages_dict, reply_to_msg_id=None):
@@ -163,10 +171,10 @@ def create_messages(dialog_id, messages_dict, reply_to_msg_id=None):
     for message, reply_messages in messages_dict.items():
         msg, created = Message.objects.get_or_create(
             dialog_id=dialog_id,
-            role=message.user_id if message.user_id else 1,
             text=message.text,
             defaults={
-                # "time": message.date,
+                "role": message.user_id if message.user_id else 0,
+                "time": message.date,
                 "reply_to_msg_id": reply_to_msg_id,
             },
         )
@@ -192,17 +200,22 @@ def generate_dialogs_from_group(id):
 
     dialogs = {}
     for msg in messages_with_reply:
-        key = f"{telegram_group.name}:{msg.text[:20]}:{msg.user_id}"
 
-        # это нужно на тот случай если для полного диалоги для вопроса нужен контекст
-        # closely_messages = messages_from_group.filter( 
-        #     message_id__in=range(message.message_id - 2, message.message_id + 2) 
-        # )
-
-        dialogs[key] = {msg: get_answer_from_message(messages_from_group, msg)}
-
-        dialog, created = Dialog.objects.get_or_create(
-            name=key[:255], defaults={"is_active": False}
+        context_messages = messages_from_group.filter(
+            user_id=msg.user_id,
+            message_id__in=range(msg.message_id - 2, msg.message_id + 2),
         )
+
+        if context_messages.filter(reply_to_msg_id__isnull=False).exists():
+            continue
+
+        dialog = {}
+        key = f"{telegram_group.name[:50]}:{msg.text[:150]}:{msg.user_id}"
+        dialogs[key] = dialog
+
+        for m in context_messages:
+            dialog[m] = get_answer_from_message(messages_from_group, m)
+
+        dialog, created = Dialog.objects.get_or_create(name=key[:255])
 
         create_messages(dialog.id, dialogs[key])

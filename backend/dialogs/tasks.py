@@ -18,7 +18,7 @@ def check_scene(id):
         check_user(user.id)
 
     try:
-        if roles.count() != scene.dialog.get_roles_count():
+        if roles.count() != scene.dialog.roles_count:
             raise Exception(
                 "Count of roles of Dialog are not equal count of roles of scene"
             )

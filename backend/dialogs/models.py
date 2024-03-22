@@ -31,9 +31,10 @@ class Dialog(TimeStampedModel):
     name = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"{self.name} {self.get_roles_count()} roles"
+        return f"{self.name} {self.roles_count} roles"
 
-    def get_roles_count(self):
+    @property
+    def roles_count(self):
         return self.messages.values("role").distinct().count()
 
 
@@ -43,7 +44,7 @@ class Message(TimeStampedModel):
     )
     role = models.PositiveBigIntegerField()
     text = models.TextField()
-    # time = models.TimeField()
+    time = models.TimeField()
     reply_to_msg = models.ForeignKey(
         "Message", on_delete=models.CASCADE, null=True, blank=True
     )
@@ -69,9 +70,13 @@ class Scene(TimeStampedModel):
         # добавить проверку что все юзеры в чате
         return (
             are_users_active
-            and roles.count() == self.dialog.get_roles_count()
+            and self.roles_count == self.dialog.roles_count
             and self.is_active
         )
+
+    @property
+    def roles_count(self):
+        return self.roles.count()
 
 
 class Role(TimeStampedModel):
