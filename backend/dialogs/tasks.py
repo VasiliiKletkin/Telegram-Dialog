@@ -50,23 +50,25 @@ def start_scene(id):
         raise Exception("scene in not ready")
 
     for message in scene.dialog.messages.all():
-        role = scene.roles.get(role=message.role)
-
-        # target_time = timezone.now() + timedelta(minutes=5)
-
-        # clocked_schedule = ClockedSchedule.objects.create(clocked_time=target_time)
-
-        # PeriodicTask.objects.create(
-        #     clocked=clocked_schedule,
-        #     name="send_message",
-        #     description="Send message",
-        #     one_off=True,
-        #     task="telegram.tasks.send_message",
-        #     args=[3, 7]
-        # )
-        msg = send_message(
-            role.telegram_user.id,
-            scene.telegram_group.username,
-            message.text,
-            reply_to_msg_id=msg_id,
+        role = scene.roles.get(name=message.role_name)
+        target_time = message.time + timezone.now()
+        clocked_schedule = ClockedSchedule.objects.create(clocked_time=target_time)
+        PeriodicTask.objects.create(
+            clocked=clocked_schedule,
+            name=f"Send_message: {target_time} - {role.telegram_user.id} - {message.text[:100]}",
+            description="Send message",
+            one_off=True,
+            task="telegram.tasks.send_message",
+            args=[
+                role.telegram_user.id,
+                scene.telegram_group.username,
+                message.text,
+                # get_reply_to_msg_id(scene, message),
+            ],
         )
+        # msg = send_message(
+        #     role.telegram_user.id,
+        #     scene.telegram_group.username,
+        #     message.text,
+        #     msg_id,
+        # )

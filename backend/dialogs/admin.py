@@ -1,6 +1,7 @@
 from django.contrib import admin, messages
 from .models import Dialog, Message, Scene, Role
 from .tasks import start_scene, check_scene
+from .forms import RoleInlineForm
 
 
 class MessageInlineAdmin(admin.TabularInline):
@@ -13,6 +14,7 @@ class DialogAdmin(admin.ModelAdmin):
 
 
 class RoleInlineAdmin(admin.TabularInline):
+    form = RoleInlineForm
     model = Role
     extra = 1
 

@@ -215,12 +215,13 @@ def generate_dialogs_from_group(id):
             continue
 
         dialog = {}
-        key = f"{telegram_group.name[:50]}:{msg.text[:150]}:{msg.user_id}"
+        key = f"{telegram_group.name[:50]}:{msg.text[:100]}:{msg.user_id}"
         dialogs[key] = dialog
 
         for m in context_messages:
             dialog[m] = get_answer_from_message(messages_from_group, m)
 
-        dialog, created = Dialog.objects.get_or_create(name=key[:255])
+        dialog, created = Dialog.objects.get_or_create(name=key[:255]) 
+        #add auto tagging
 
         create_messages(dialog.id, dialogs[key])

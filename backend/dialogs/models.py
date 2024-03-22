@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from model_utils.models import TimeStampedModel
 from telegram.models import TelegramGroup, TelegramUser
 from taggit.managers import TaggableManager
@@ -22,7 +23,7 @@ class Message(TimeStampedModel):
     dialog = models.ForeignKey(
         Dialog, on_delete=models.CASCADE, related_name="messages"
     )
-    role = models.PositiveBigIntegerField()
+    role_name = models.CharField(max_length=255)
     text = models.TextField()
     time = models.TimeField()
     reply_to_msg = models.ForeignKey(
@@ -47,10 +48,17 @@ class Scene(TimeStampedModel):
         roles = self.roles.all()
         telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
         are_users_active = all(user.is_ready for user in telegram_users)
-        # добавить проверку что все юзеры в чате
+        are_users_members_of_group = all(
+            user.client_session.entity_set.filter(
+                Q(name=self.telegram_group.name)
+                | Q(username=self.telegram_group.username)
+            ).exists()
+            for user in telegram_users
+        )
         return (
-            are_users_active
-            and self.roles_count == self.dialog.roles_count
+            self.roles_count == self.dialog.roles_count
+            and are_users_active
+            and are_users_members_of_group
             and self.is_active
         )
 
@@ -58,16 +66,21 @@ class Scene(TimeStampedModel):
     def roles_count(self):
         return self.roles.count()
 
+    # def clean(self) -> None:
+    #     self.dialog.
+
+    #     return super().clean()
+
 
 class Role(TimeStampedModel):
     scene = models.ForeignKey(Scene, on_delete=models.CASCADE, related_name="roles")
+    name = models.CharField(max_length=255)
     telegram_user = models.ForeignKey(
         TelegramUser, on_delete=models.CASCADE, related_name="roles"
     )
-    role = models.PositiveBigIntegerField()
 
     def __str__(self):
-        return f"{self.telegram_user.username} {self.role}"
+        return f"{self.telegram_user.username} {self.name}"
 
     class Meta:
-        unique_together = ("scene", "telegram_user", "role")
+        unique_together = ("scene", "telegram_user", "name")
