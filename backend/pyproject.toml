@@ -23,6 +23,7 @@ psycopg2-binary = "^2.9.9"
 proxy-checker = "^0.6"
 pysocks = "^1.7.1"
 django-taggit = "^5.0.1"
+django-autocomplete-light = "^3.11.0"
 
 
 [build-system]

@@ -30,12 +30,23 @@ class TelegramGroupMessage(models.Model):
 
 
 class TelegramUser(TimeStampedModel):
+    MALE = 0
+    FEMALE = 1
+    NONE = 2
+
+    SEX_CHOICE = (
+        ("Male", MALE),
+        ("Feale", FEMALE),
+        ("None", NONE),
+    )
     is_active = models.BooleanField(default=False)
 
     id = models.BigIntegerField(primary_key=True)
     username = models.CharField(max_length=32, null=True, blank=True)
     first_name = models.CharField(default="", max_length=64, null=True, blank=True)
     last_name = models.CharField(default="", max_length=64, null=True, blank=True)
+    sex = models.PositiveIntegerField(choices=SEX_CHOICE, default=NONE)
+
     phone = models.CharField(max_length=30, null=True, blank=True)
     two_fa = models.CharField(max_length=30, null=True, blank=True)
 

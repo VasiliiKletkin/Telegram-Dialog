@@ -38,13 +38,18 @@ def check_user(id):
                 proxy=telegram_user.proxy_server.get_proxy_dict(),
             )
             UpdateState.objects.all().delete()
-            await telegram_client.start(
-                phone=telegram_user.phone, password=telegram_user.two_fa
-            )
-
+            # await telegram_client.start(
+            #     phone=telegram_user.phone, password=telegram_user.two_fa
+            # )
             async with telegram_client:
-                await telegram_client.get_me()
+                me = await telegram_client.get_me()
                 await telegram_client.get_dialogs()
+                telegram_user.first_name = me.first_name
+                telegram_user.last_name = me.last_name
+                telegram_user.username = me.username
+                telegram_user.save(
+                    update_fields=["first_name", "last_name", "username"]
+                )
 
         checking()
 

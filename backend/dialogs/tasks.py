@@ -15,24 +15,17 @@ def check_scene(id):
     roles = scene.roles.all()
     telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
 
-    for user in telegram_users:
-        check_user(user.id)
-
     try:
-        if roles.count() != scene.dialog.roles_count:
+        if scene.roles_count != scene.dialog.roles_count:
             raise Exception(
                 "Count of roles of Dialog are not equal count of roles of scene"
             )
 
-        users_with_problems = telegram_users.filter(is_active=False)
-        if users_with_problems.exists():
-            errors = ""
-            for user in users_with_problems:
-                errors += user.error + "\n"
-            raise Exception(f"Some user(s) have problems:{errors}")
-
         for user in telegram_users:
-            # FIXME change on more better option
+            check_user(user.id)
+            if not user.is_active:
+                raise Exception(f"User {user} is not active")
+
             if not user.client_session.entity_set.filter(
                 Q(name=scene.telegram_group.name)
                 | Q(username=scene.telegram_group.username)
