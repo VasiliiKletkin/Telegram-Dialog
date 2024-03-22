@@ -1,34 +1,14 @@
 from django.db import models
 from model_utils.models import TimeStampedModel
 from telegram.models import TelegramGroup, TelegramUser
-
-ROLES = (
-    (1, "Role 1"),
-    (2, "Role 2"),
-    (3, "Role 3"),
-    (4, "Role 4"),
-    (5, "Role 5"),
-    (6, "Role 6"),
-    (7, "Role 7"),
-    (8, "Role 8"),
-    (9, "Role 9"),
-    (10, "Role 10"),
-    (11, "Role 11"),
-    (12, "Role 12"),
-    (13, "Role 13"),
-    (14, "Role 14"),
-    (15, "Role 15"),
-    (16, "Role 16"),
-    (17, "Role 17"),
-    (18, "Role 18"),
-    (19, "Role 19"),
-    (20, "Role 20"),
-)
+from taggit.managers import TaggableManager
 
 
 class Dialog(TimeStampedModel):
     is_active = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
+
+    tags = TaggableManager()
 
     def __str__(self):
         return f"{self.name} {self.roles_count} roles"
@@ -84,7 +64,7 @@ class Role(TimeStampedModel):
     telegram_user = models.ForeignKey(
         TelegramUser, on_delete=models.CASCADE, related_name="roles"
     )
-    role = models.PositiveBigIntegerField(choices=ROLES)
+    role = models.PositiveBigIntegerField()
 
     def __str__(self):
         return f"{self.telegram_user.username} {self.role}"

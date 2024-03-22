@@ -59,14 +59,15 @@ def check_user(id):
 
 
 @app.task()
-def send_message(telegram_user_id, chat_id, message, reply_to_msg_id=None):
+def send_message(telegram_user_id, chat_id, message, reply_to_msg_id=None, waiting=False):
     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
 
-    symbols_per_sec = (
-        random.randint(settings.MIN_SYMBOLS_PER_MIN, settings.MAX_SYMBOLS_PER_MIN) / 60
-    )
-    wait_time = len(message) / symbols_per_sec
-    time.sleep(wait_time)
+    if waiting:
+        symbols_per_sec = (
+            random.randint(settings.MIN_SYMBOLS_PER_MIN, settings.MAX_SYMBOLS_PER_MIN) / 60
+        )
+        wait_time = len(message) / symbols_per_sec
+        time.sleep(wait_time)
 
     @async_to_sync
     async def send_mess():
@@ -205,7 +206,6 @@ def generate_dialogs_from_group(id):
             user_id=msg.user_id,
             message_id__in=range(msg.message_id - 2, msg.message_id + 2),
         )
-
         if context_messages.filter(reply_to_msg_id__isnull=False).exists():
             continue
 

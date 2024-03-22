@@ -416,6 +416,20 @@ files = [
 Django = ">=3.2"
 
 [[package]]
+name = "django-taggit"
+version = "5.0.1"
+description = "django-taggit is a reusable Django application for simple tagging."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "django-taggit-5.0.1.tar.gz", hash = "sha256:edcd7db1e0f35c304e082a2f631ddac2e16ef5296029524eb792af7430cab4cc"},
+    {file = "django_taggit-5.0.1-py3-none-any.whl", hash = "sha256:a0ca8a28b03c4b26c2630fd762cb76ec39b5e41abf727a7b66f897a625c5e647"},
+]
+
+[package.dependencies]
+Django = ">=4.1"
+
+[[package]]
 name = "django-telethon"
 version = "1.2.4"
 description = "Telethon for django"
@@ -1142,4 +1156,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "557383f03e67e1a127ede0471ded3e05476b2096cbe9e92d5114e51be37beffe"
+content-hash = "501d9c87d3c5ee8a6c929fcc434a8c4bcdafa638a8d843b1b31401343bdb66ed"

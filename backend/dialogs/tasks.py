@@ -3,7 +3,8 @@ from django.db.models import Q
 from django_celery_beat.models import ClockedSchedule, PeriodicTask
 from telegram.models import TelegramUser
 from telegram.tasks import check_user, join_to_chat, send_message
-
+from django.utils import timezone
+from datetime import timedelta
 from .models import Scene
 
 
@@ -55,7 +56,6 @@ def start_scene(id):
     if not scene.is_ready:
         raise Exception("scene in not ready")
 
-    msg = None
     for message in scene.dialog.messages.all():
         role = scene.roles.get(role=message.role)
 
@@ -65,13 +65,12 @@ def start_scene(id):
 
         # PeriodicTask.objects.create(
         #     clocked=clocked_schedule,
-        #     name="my-task",
+        #     name="send_message",
         #     description="Send message",
         #     one_off=True,
         #     task="telegram.tasks.send_message",
         #     args=[3, 7]
         # )
-        msg_id = msg.id if msg else None
         msg = send_message(
             role.telegram_user.id,
             scene.telegram_group.username,

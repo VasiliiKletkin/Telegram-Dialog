@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django_telethon',
     'django_celery_results',
     'django_celery_beat',
+    'taggit',
 
     "proxies",
     "telegram",
@@ -160,3 +161,6 @@ TEST_USER_ID = 5724639696
 
 MIN_SYMBOLS_PER_MIN = 200
 MAX_SYMBOLS_PER_MIN = 400
+
+
+TAGGIT_CASE_INSENSITIVE = True
