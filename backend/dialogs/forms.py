@@ -4,7 +4,7 @@ from django.forms import ModelForm
 from .models import Role, Message, Scene
 
 
-class RoleInlineForm(ModelForm):
+class RoleInlineAdminForm(ModelForm):
     class Meta:
         model = Role
         fields = "__all__"
@@ -18,7 +18,7 @@ class RoleInlineForm(ModelForm):
         }
 
 
-class MessageInlineForm(ModelForm):
+class MessageInlineAdminForm(ModelForm):
     class Meta:
         model = Message
         fields = "__all__"
@@ -27,7 +27,7 @@ class MessageInlineForm(ModelForm):
         }
 
 
-class SceneForm(ModelForm):
+class SceneAdminForm(ModelForm):
     class Meta:
         model = Scene
         fields = "__all__"

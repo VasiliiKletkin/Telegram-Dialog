@@ -1,11 +1,11 @@
 from django.contrib import admin, messages
 from .models import Dialog, Message, Scene, Role
 from .tasks import start_scene, check_scene
-from .forms import RoleInlineForm, MessageInlineForm
+from .forms import RoleInlineAdminForm, MessageInlineAdminForm, SceneAdminForm
 
 
 class MessageInlineAdmin(admin.TabularInline):
-    form = MessageInlineForm
+    form = MessageInlineAdminForm
     model = Message
     extra = 1
 
@@ -15,7 +15,7 @@ class DialogAdmin(admin.ModelAdmin):
 
 
 class RoleInlineAdmin(admin.TabularInline):
-    form = RoleInlineForm
+    form = RoleInlineAdminForm
     model = Role
     extra = 1
 
@@ -24,7 +24,7 @@ class SceneAdmin(admin.ModelAdmin):
     list_display = ("dialog", "telegram_group", "is_active")
     inlines = [RoleInlineAdmin]
     actions = ["start", "check_obj"]
-    form = s
+    form = SceneAdminForm
 
     def start(self, request, queryset):
         messages.add_message(request, messages.INFO, "Scenes starting...")
