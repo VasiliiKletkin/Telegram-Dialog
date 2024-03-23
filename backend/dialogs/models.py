@@ -90,6 +90,6 @@ class Role(TimeStampedModel):
         unique_together = ("scene", "telegram_user", "name")
 
 
-class HistoryDialogs(TimeStampedModel):
-    clocked_time = models.DateTimeField()
-    dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name="history")
+# class HistoryDialogs(TimeStampedModel):
+#     clocked_time = models.DateTimeField()
+#     dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name="history")

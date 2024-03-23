@@ -11,14 +11,14 @@ class TelegramGroupAdmin(admin.ModelAdmin):
     def get_messages(self, request, queryset):
         messages.add_message(request, messages.INFO, "Parse messages from group...")
         for obj in queryset:
-            get_messages_from_group(obj.id)
+            get_messages_from_group.delay(obj.id)
 
     get_messages.short_description = "Parse messages"
 
     def generate_dialogs(self, request, queryset):
         messages.add_message(request, messages.INFO, "Generate dialogs from group...")
         for obj in queryset:
-            generate_dialogs_from_group(obj.id)
+            generate_dialogs_from_group.delay(obj.id)
 
     generate_dialogs.short_description = "Generate dialogs"
 
@@ -30,7 +30,7 @@ class TelegramUserAdmin(admin.ModelAdmin):
     def check_obj(self, request, queryset):
         messages.add_message(request, messages.INFO, "Checking...")
         for obj in queryset:
-            check_user(obj.id)
+            check_user.delay(obj.id)
 
     check_obj.short_description = "Check User"
 

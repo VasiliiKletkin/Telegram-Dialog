@@ -29,14 +29,14 @@ class SceneAdmin(admin.ModelAdmin):
     def start(self, request, queryset):
         messages.add_message(request, messages.INFO, "Scenes starting...")
         for obj in queryset:
-            start_scene(obj.id)
+            start_scene.delay(obj.id)
 
     start.short_description = "Start scene"
 
     def check_obj(self, request, queryset):
         messages.add_message(request, messages.INFO, "Scenes checking...")
         for obj in queryset:
-            check_scene(obj.id)
+            check_scene.delay(obj.id)
 
     check_obj.short_description = "Check scene"
 
