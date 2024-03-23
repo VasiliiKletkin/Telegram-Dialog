@@ -9,9 +9,8 @@ from django_telethon.sessions import DjangoSession
 from proxies.tasks import check_proxy
 from telethon.sync import TelegramClient
 from telethon.tl.functions.channels import JoinChannelRequest
-from telethon.tl.types import PeerUser
 from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
-from dialogs.models import Dialog, Message
+from dialogs.models import Dialog, Message, Scene
 from django.db.models import Count
 
 
@@ -63,16 +62,71 @@ def check_user(id):
         telegram_user.save()
 
 
-@app.task()
-def send_message(telegram_user_id, chat_id, message, reply_to_msg_id=None, waiting=False):
-    telegram_user = TelegramUser.objects.get(id=telegram_user_id)
+# @app.task()
+# def send_message(telegram_user_id, chat_id, text, reply_to_msg_id=None, waiting=False):
+#     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
 
-    if waiting:
-        symbols_per_sec = (
-            random.randint(settings.MIN_SYMBOLS_PER_MIN, settings.MAX_SYMBOLS_PER_MIN) / 60
-        )
-        wait_time = len(message) / symbols_per_sec
-        time.sleep(wait_time)
+#     if waiting:
+#         symbols_per_sec = (
+#             random.randint(settings.MIN_SYMBOLS_PER_MIN, settings.MAX_SYMBOLS_PER_MIN)
+#             / 60
+#         )
+#         wait_time = len(text) / symbols_per_sec
+#         time.sleep(wait_time)
+
+#     @async_to_sync
+#     async def send_mess():
+#         telegram_client = TelegramClient(
+#             session=DjangoSession(client_session=telegram_user.client_session),
+#             api_id=telegram_user.app.api_id,
+#             api_hash=telegram_user.app.api_hash,
+#             proxy=telegram_user.proxy_server.get_proxy_dict(),
+#         )
+#         UpdateState.objects.all().delete()
+#         async with telegram_client:
+#             chat = await telegram_client.get_entity(chat_id)
+#             message = await telegram_client.send_message(
+#                 chat, text, reply_to=reply_to_msg_id
+#             )
+#         TelegramGroupMessage.objects.create(
+#             telegram_group=TelegramGroup.objects.get(username=chat.username),
+#             message_id=message.id,
+#             text=message.message,
+#             date=message.date,
+#             user_id=(
+#                 message.from_id.user_id
+#                 if message.from_id and hasattr(message.from_id, "user_id")
+#                 else None
+#             ),
+#             reply_to_msg_id=(
+#                 message.reply_to.reply_to_msg_id if message.reply_to else None
+#             ),
+#         )
+
+#     send_mess()
+
+
+@app.task()
+def send_message(message_id, scene_id):
+    scene = Scene.objects.get(id=scene_id)
+    message = Message.objects.get(id=message_id)
+    role = scene.roles.get(name=message.role_name)
+    telegram_user = role.telegram_user
+
+    reply_to_msg_id = None
+    if answer_message := message.reply_to_msg:
+        answer_role = scene.roles.get(name=answer_message.role_name)
+        answer_telegram_user = answer_role.telegram_user
+        try:
+            reply_to_msg_id = TelegramGroupMessage.objects.values_list(
+                "reply_to_msg_id", flat=True
+            ).get(
+                from_id=answer_telegram_user.id,
+                telegram_group=scene.telegram_group,
+                text=answer_message.text,
+            )
+        except TelegramGroupMessage.DoesNotExist:
+            pass
 
     @async_to_sync
     async def send_mess():
@@ -84,10 +138,23 @@ def send_message(telegram_user_id, chat_id, message, reply_to_msg_id=None, waiti
         )
         UpdateState.objects.all().delete()
         async with telegram_client:
-            chat = await telegram_client.get_entity(chat_id)
-            msg = await telegram_client.send_message(
-                chat, message, reply_to=reply_to_msg_id
+            chat = await telegram_client.get_entity(scene.telegram_group.username)
+            sent_message = await telegram_client.send_message(
+                chat,
+                message.text,
+                reply_to=reply_to_msg_id,
             )
+
+        TelegramGroupMessage.objects.create(
+            telegram_group=scene.telegram_group,
+            message_id=sent_message.id,
+            text=sent_message.message,
+            date=sent_message.date,
+            user_id=sent_message.from_id.user_id,
+            reply_to_msg_id=(
+                sent_message.reply_to.reply_to_msg_id if sent_message.reply_to else None
+            ),
+        )
 
     send_mess()
 
@@ -220,7 +287,7 @@ def generate_dialogs_from_group(id):
         for m in context_messages:
             dialog[m] = get_answer_from_message(messages_from_group, m)
 
-        dialog, created = Dialog.objects.get_or_create(name=key[:255]) 
-        #add auto tagging
+        dialog, created = Dialog.objects.get_or_create(name=key[:255])
+        # add auto tagging
 
         create_messages(dialog.id, dialogs[key])
