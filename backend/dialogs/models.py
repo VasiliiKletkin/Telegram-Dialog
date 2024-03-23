@@ -1,4 +1,5 @@
 import json
+from django.forms import ValidationError
 from django.utils import timezone
 from django.db import models
 from django.db.models import Q
@@ -36,6 +37,12 @@ class Message(TimeStampedModel):
 
     def __str__(self):
         return f"{self.id}:{self.role_name}: {self.text[:10]}"
+
+    def clean(self) -> None:
+        if self.reply_to_msg:
+            if self.reply_to_msg.dialog != self.dialog:
+                raise ValidationError("reply_to_msg link on different dialog")
+        return super().clean()
 
 
 class Scene(TimeStampedModel):

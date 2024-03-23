@@ -3,6 +3,7 @@ from .models import Dialog, Message, Scene, Role
 from .tasks import start_scene, check_scene
 from .forms import RoleInlineAdminForm, MessageInlineAdminForm, SceneAdminForm
 from dal_admin_filters import AutocompleteFilter
+from rangefilter.filters import DateTimeRangeFilter
 
 
 class MessageInlineAdmin(admin.TabularInline):
@@ -54,7 +55,7 @@ class SceneAdmin(admin.ModelAdmin):
         (DialogFilterAdmin),
         (TelegramGroupFilterAdmin),
         # (TelegramUserFilterAdmin),
-        ("start_date", admin.DateFieldListFilter),
+        ("start_date", DateTimeRangeFilter),
     ]
     inlines = [RoleInlineAdmin]
     actions = ["start", "check_obj"]
