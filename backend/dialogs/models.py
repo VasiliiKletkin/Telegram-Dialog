@@ -34,6 +34,8 @@ class Message(TimeStampedModel):
     reply_to_msg = models.ForeignKey(
         "Message", on_delete=models.CASCADE, null=True, blank=True
     )
+    class Meta:
+        ordering = ["time"]
 
     def __str__(self):
         return f"{self.id}:{self.role_name}: {self.text[:10]}"

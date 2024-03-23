@@ -52,7 +52,7 @@ def start_scene(id):
     if not scene.is_ready:
         raise Exception("scene in not ready")
 
-    for message in scene.dialog.messages.all():
+    for message in scene.dialog.messages.order_by("time"):
         role = scene.roles.get(name=message.role_name)
 
         target_time = timezone.now() + timedelta(

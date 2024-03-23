@@ -118,12 +118,15 @@ def send_message(message_id, scene_id):
         answer_role = scene.roles.get(name=answer_message.role_name)
         answer_telegram_user = answer_role.telegram_user
         try:
-            reply_to_msg_id = TelegramGroupMessage.objects.values_list(
-                "reply_to_msg_id", flat=True
-            ).order_by('date').last(
-                from_id=answer_telegram_user.id,
-                telegram_group=scene.telegram_group,
-                text=answer_message.text,
+            reply_to_msg_id = (
+                TelegramGroupMessage.objects.values_list("message_id", flat=True)
+                .filter(
+                    user_id=answer_telegram_user.id,
+                    telegram_group=scene.telegram_group,
+                    text=answer_message.text,
+                )
+                .order_by("date")
+                .last()
             )
         except TelegramGroupMessage.DoesNotExist:
             pass
