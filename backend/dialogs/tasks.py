@@ -62,15 +62,14 @@ def start_scene(id):
         )
         target_time_str = target_time.strftime("%d-%b-%Y:%H:%M:%S")
 
-        clocked_schedule, created = ClockedSchedule.objects.get_or_create(
+        clocked_schedule = ClockedSchedule.objects.create(
             clocked_time=target_time
         )
         task = PeriodicTask.objects.create(
             clocked=clocked_schedule,
-            name=f"Send message: {role.telegram_user.id}-{scene.telegram_group.username} {target_time_str} {message.text[:15]}",
+            name=f"Send message id:{message.id}, user_id:{role.telegram_user.id}, group:@{scene.telegram_group.username}, time:{target_time_str}, message:{message.text[:15]}",
             one_off=True,
             task="telegram.tasks.send_message",
-            # args=json.dumps(["arg1", "arg2"]),
             args=json.dumps(
                 [
                     role.telegram_user.id,

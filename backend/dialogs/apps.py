@@ -6,4 +6,4 @@ class DialogsConfig(AppConfig):
     name = 'dialogs'
 
     def ready(self):
-        from . import tasks
+        from . import tasks, signals

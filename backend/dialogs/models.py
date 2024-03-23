@@ -1,8 +1,11 @@
+import json
+from django.utils import timezone
 from django.db import models
 from django.db.models import Q
 from model_utils.models import TimeStampedModel
 from telegram.models import TelegramGroup, TelegramUser
 from taggit.managers import TaggableManager
+from django_celery_beat.models import ClockedSchedule, PeriodicTask
 from datetime import time
 
 
@@ -37,6 +40,7 @@ class Message(TimeStampedModel):
 
 class Scene(TimeStampedModel):
     is_active = models.BooleanField(default=False)
+    start_date = models.DateTimeField(default=timezone.now)
     dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name="scenes")
     telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
     error = models.TextField(null=True, blank=True)
@@ -74,6 +78,8 @@ class Scene(TimeStampedModel):
             ).exists()
             for user in telegram_users
         )
+    class Meta:
+        unique_together = ("dialog", "telegram_group")
 
 
 class Role(TimeStampedModel):
@@ -90,6 +96,4 @@ class Role(TimeStampedModel):
         unique_together = ("scene", "telegram_user", "name")
 
 
-# class HistoryDialogs(TimeStampedModel):
-#     clocked_time = models.DateTimeField()
-#     dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name="history")
+# class SceneStory()
