@@ -120,7 +120,7 @@ def send_message(message_id, scene_id):
         try:
             reply_to_msg_id = TelegramGroupMessage.objects.values_list(
                 "reply_to_msg_id", flat=True
-            ).get(
+            ).order_by('date').last(
                 from_id=answer_telegram_user.id,
                 telegram_group=scene.telegram_group,
                 text=answer_message.text,
