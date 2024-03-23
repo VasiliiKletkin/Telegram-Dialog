@@ -20,7 +20,7 @@ def convert_to_orm(id):
     )
 
     client_session, cs_is_created = ClientSession.objects.get_or_create(
-        name=json_data["phone"],
+        name=json_data["id"],
     )
 
     TelegramUser.objects.get_or_create(
