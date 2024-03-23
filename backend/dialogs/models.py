@@ -45,6 +45,9 @@ class Scene(TimeStampedModel):
     telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
     error = models.TextField(null=True, blank=True)
 
+    class Meta:
+        unique_together = ("dialog", "telegram_group")
+
     def __str__(self):
         return f"{self.dialog.name} {self.telegram_group.username}"
 
@@ -78,8 +81,6 @@ class Scene(TimeStampedModel):
             ).exists()
             for user in telegram_users
         )
-    class Meta:
-        unique_together = ("dialog", "telegram_group")
 
 
 class Role(TimeStampedModel):
@@ -89,11 +90,8 @@ class Role(TimeStampedModel):
         TelegramUser, on_delete=models.CASCADE, related_name="roles"
     )
 
-    def __str__(self):
-        return f"{self.telegram_user.username} {self.name}"
-
     class Meta:
         unique_together = ("scene", "telegram_user", "name")
 
-
-# class SceneStory()
+    def __str__(self):
+        return f"{self.telegram_user.username} {self.name}"
