@@ -19,15 +19,9 @@ class MessageRoleNameAutocomplete(autocomplete.Select2ListView):
 
 class MessageAutocomplete(autocomplete.Select2QuerySetView):
     queryset = Message.objects.all()
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        return qs
+    search_fields = ["text", "id"]
 
 
 class DialogAutocomplete(autocomplete.Select2QuerySetView):
-    queryset = Dialog.objects.all()
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        return qs
+    queryset = Dialog.objects.filter(is_active=True)
+    search_fields = ["name", "id"]

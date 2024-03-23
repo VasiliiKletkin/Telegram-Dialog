@@ -88,9 +88,8 @@ def send_message(telegram_user_id, chat_id, message, reply_to_msg_id=None, waiti
             msg = await telegram_client.send_message(
                 chat, message, reply_to=reply_to_msg_id
             )
-        return msg
 
-    return send_mess()
+    send_mess()
 
 
 @app.task()
@@ -179,7 +178,7 @@ def create_messages(dialog_id, messages_dict, reply_to_msg_id=None):
             dialog_id=dialog_id,
             text=message.text,
             defaults={
-                "role": message.user_id if message.user_id else 0,
+                "role_name": message.user_id if message.user_id else "Smbd",
                 "time": message.date,
                 "reply_to_msg_id": reply_to_msg_id,
             },

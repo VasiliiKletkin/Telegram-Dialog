@@ -6,23 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dialogs', '0015_rename_role_role_name_alter_role_unique_together'),
+        ("dialogs", "0015_rename_role_role_name_alter_role_unique_together"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='message',
-            name='role',
+            model_name="message",
+            name="role",
         ),
         migrations.AddField(
-            model_name='message',
-            name='role_name',
-            field=models.CharField(default='name of role', max_length=255),
+            model_name="message",
+            name="role_name",
+            field=models.CharField(default="Smbd", max_length=255),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='role',
-            name='name',
+            model_name="role",
+            name="name",
             field=models.CharField(max_length=255),
         ),
     ]

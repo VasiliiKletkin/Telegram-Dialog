@@ -1,9 +1,13 @@
+from datetime import timedelta
+import json
+
 from core.celery import app
 from django.db.models import Q
+from django.utils import timezone
 from django_celery_beat.models import ClockedSchedule, PeriodicTask
 from telegram.models import TelegramUser
 from telegram.tasks import check_user, join_to_chat
-from django.utils import timezone
+
 from .models import Scene
 
 
@@ -50,24 +54,37 @@ def start_scene(id):
 
     for message in scene.dialog.messages.all():
         role = scene.roles.get(name=message.role_name)
-        target_time = message.time + timezone.now()
-        clocked_schedule = ClockedSchedule.objects.create(clocked_time=target_time)
-        PeriodicTask.objects.create(
+
+        target_time = timezone.now() + timedelta(
+            seconds=message.time.second,
+            minutes=message.time.minute,
+            hours=message.time.hour,
+        )
+        target_time_str = target_time.strftime("%d-%b-%Y:%H:%M:%S")
+
+        clocked_schedule, created = ClockedSchedule.objects.get_or_create(
+            clocked_time=target_time
+        )
+        task = PeriodicTask.objects.create(
             clocked=clocked_schedule,
-            name=f"Send_message: {target_time} - {role.telegram_user.id} - {message.text[:100]}",
-            description="Send message",
+            name=f"Send message: {role.telegram_user.id}-{scene.telegram_group.username} {target_time_str} {message.text[:15]}",
             one_off=True,
             task="telegram.tasks.send_message",
-            args=[
-                role.telegram_user.id,
-                scene.telegram_group.username,
-                message.text,
-                # get_reply_to_msg_id(scene, message),
-            ],
+            # args=json.dumps(["arg1", "arg2"]),
+            args=json.dumps(
+                [
+                    role.telegram_user.id,
+                    scene.telegram_group.username,
+                    message.text,
+                    # get_reply_to_msg_id(scene, message),
+                ]
+            ),
         )
-        # msg = send_message(
-        #     role.telegram_user.id,
-        #     scene.telegram_group.username,
-        #     message.text,
-        #     msg_id,
-        # )
+
+
+# msg = send_message(
+#     role.telegram_user.id,
+#     scene.telegram_group.username,
+#     message.text,
+#     msg_id,
+# )
