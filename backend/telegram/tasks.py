@@ -48,9 +48,9 @@ def save_all_dialogs_from_user(telegram_user_id):
                         ),
                     )
                 )
+            UpdateState.objects.all().delete()
 
     get_all_dialogs()
-    UpdateState.objects.all().delete()
 
     telegram_user.client_session.entity_set.bulk_create(
         entities,
@@ -93,9 +93,9 @@ def check_user(user_id):
                 telegram_user.first_name = me.first_name
                 telegram_user.last_name = me.last_name
                 telegram_user.username = me.username
+                UpdateState.objects.all().delete()
 
         checking()
-        UpdateState.objects.all().delete()
 
         telegram_user.save(update_fields=["first_name", "last_name", "username"])
 
@@ -160,9 +160,9 @@ def send_message(message_id, scene_id):
                 message.text,
                 reply_to=reply_to_msg_id,
             )
+            UpdateState.objects.all().delete()
 
     send_mess()
-    UpdateState.objects.all().delete()
 
     TelegramGroupMessage.objects.create(
         telegram_group=scene.telegram_group,
@@ -191,9 +191,9 @@ def join_to_chat(telegram_user_id, chat_id):
         async with telegram_client:
             chat = await telegram_client.get_entity(chat_id)
             await telegram_client(JoinChannelRequest(chat))
+            UpdateState.objects.all().delete()
 
     join()
-    UpdateState.objects.all().delete()
 
 
 @app.task()
@@ -211,7 +211,7 @@ def get_messages_from_group(group_id):
         )
         async with telegram_client:
             group = await telegram_client.get_entity(telegram_group.username)
-            async for message in telegram_client.iter_messages(group, 1000):
+            async for message in telegram_client.iter_messages(group, 1000): #FIXME change on bulk update
                 TelegramGroupMessage.objects.get_or_create(
                     message_id=message.id,
                     telegram_group=telegram_group,
@@ -231,9 +231,9 @@ def get_messages_from_group(group_id):
                         ),
                     },
                 )
+            UpdateState.objects.all().delete()
 
     get_mess()
-    UpdateState.objects.all().delete()
 
 
 def get_answer_from_message(all_messages_from_group, ask_message):
