@@ -35,9 +35,6 @@ class Message(TimeStampedModel):
         "Message", on_delete=models.CASCADE, null=True, blank=True
     )
 
-    class Meta:
-        unique_together = ("dialog", "role_name", "start_time")
-
     def __str__(self):
         return f"{self.id}, role:{self.role_name}, text:{self.text[:10]}"
 

@@ -297,7 +297,12 @@ def generate_dialogs_from_group(id):
         # add auto tagging
 
         msg_ids = create_messages(dialog.id, dialogs[key])
+        print(msg_ids)
         Message.objects.filter(id__in=msg_ids).update(
-            time=F("start_time")
-            - timedelta(seconds=msg.second, minutes=msg.minute, hours=msg.hour)
+            start_time=F("start_time")
+            - timedelta(
+                seconds=msg.date.second,
+                minutes=msg.date.minute,
+                hours=msg.date.hour,
+            )
         )
