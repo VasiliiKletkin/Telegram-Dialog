@@ -13,6 +13,13 @@ class MessageInlineAdmin(admin.TabularInline):
 
 
 class DialogAdmin(admin.ModelAdmin):
+    list_display = ("name", "roles_count", "created", "is_active")
+    ordering = ["-created"]
+    search_fields = ["name", "id"]
+    list_filter = [
+        ("is_active", admin.BooleanFieldListFilter),
+        ("created", DateTimeRangeFilter),
+    ]
     inlines = [MessageInlineAdmin]
 
 
@@ -46,6 +53,7 @@ class SceneAdmin(admin.ModelAdmin):
         "telegram_group",
         "roles_count",
         "start_date",
+        "is_ready",
         "is_active",
     )
     search_fields = ["dialog__name", "telegram_group__username"]

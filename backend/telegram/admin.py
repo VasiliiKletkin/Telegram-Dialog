@@ -25,7 +25,7 @@ class TelegramGroupAdmin(admin.ModelAdmin):
 
 class TelegramUserAdmin(admin.ModelAdmin):
     actions = ["check_obj"]
-    list_display = ("__str__", "is_active")
+    list_display = ("__str__", "is_ready", "is_active")
 
     def check_obj(self, request, queryset):
         messages.add_message(request, messages.INFO, "Checking...")

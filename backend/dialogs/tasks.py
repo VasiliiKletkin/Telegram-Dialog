@@ -29,10 +29,7 @@ def check_scene(id):
             if not user.is_ready:
                 raise Exception(f"User {user} is not ready")
 
-            if not user.client_session.entity_set.filter(
-                Q(name=scene.telegram_group.name)
-                | Q(username=scene.telegram_group.username)
-            ).exists():
+            if not user.is_member_of_group(scene.telegram_group.id):
                 join_to_chat(user.id, scene.telegram_group.username)
 
     except Exception as error:

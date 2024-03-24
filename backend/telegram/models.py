@@ -2,6 +2,7 @@ from django.db import models
 from django_telethon.models import App, ClientSession
 from model_utils.models import TimeStampedModel
 from proxies.models import ProxyServer
+from django.db.models import Q
 
 
 class TelegramGroup(TimeStampedModel):
@@ -74,3 +75,9 @@ class TelegramUser(TimeStampedModel):
             if self.proxy_server
             else False
         )
+
+    def is_member_of_group(self, group_id):
+        group = TelegramGroup.objects.get(id=group_id)
+        return self.client_session.entity_set.filter(
+            Q(name=group.name) | Q(username=group.username)
+        ).exists()
