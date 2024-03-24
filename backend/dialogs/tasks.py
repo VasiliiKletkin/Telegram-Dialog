@@ -1,5 +1,5 @@
-from datetime import timedelta
 import json
+from datetime import timedelta
 
 from core.celery import app
 from django.db.models import Q
@@ -12,8 +12,8 @@ from .models import Scene
 
 
 @app.task()
-def check_scene(id):
-    scene = Scene.objects.get(id=id)
+def check_scene(scene_id):
+    scene = Scene.objects.get(id=scene_id)
 
     roles = scene.roles.all()
     telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
@@ -30,7 +30,7 @@ def check_scene(id):
                 raise Exception(f"User {user} is not ready")
 
             if not user.is_member_of_group(scene.telegram_group.id):
-                join_to_chat(user.id, scene.telegram_group.username)
+                raise Exception(f"User {user} is not member of group")
 
     except Exception as error:
         scene.error = str(error)
@@ -43,8 +43,8 @@ def check_scene(id):
 
 
 @app.task()
-def start_scene(id):
-    scene = Scene.objects.get(id=id)
+def start_scene(scene_id):
+    scene = Scene.objects.get(id=scene_id)
 
     if not scene.is_ready:
         raise Exception("scene in not ready")
@@ -58,9 +58,7 @@ def start_scene(id):
             hours=message.time.hour,
         )
         target_time_str = target_time.strftime("%d-%b-%Y:%H:%M:%S")
-
         clocked_schedule = ClockedSchedule.objects.create(clocked_time=target_time)
-
         task = PeriodicTask.objects.create(
             clocked=clocked_schedule,
             name=f"Send message id:{message.id}, user_id:{role.telegram_user.id}, group:@{scene.telegram_group.username}, start_time:{target_time_str}, message:{message.text[:15]}",
@@ -76,7 +74,7 @@ def start_scene(id):
 
 
 @app.task()
-def create_periodic_task(scene_id):
+def create_periodic_task_from_scene(scene_id):
     scene = Scene.objects.get(id=scene_id)
     if not scene.is_ready:
         return
@@ -90,3 +88,15 @@ def create_periodic_task(scene_id):
         task="dialogs.tasks.start_scene",
         args=json.dumps([scene.id]),
     )
+
+
+@app.task()
+def join_to_chat_users_from_scene(scene_id):
+    scene = Scene.objects.get(id=scene_id)
+    roles = scene.roles.all()
+    telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
+
+    for user in telegram_users:
+        if not user.is_member_of_group(scene.telegram_group.id):
+            join_to_chat.delay(user.id, scene.telegram_group.username)
+    

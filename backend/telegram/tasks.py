@@ -38,7 +38,6 @@ def check_user(id):
                 api_hash=telegram_user.app.api_hash,
                 proxy=telegram_user.proxy_server.get_proxy_dict(),
             )
-            UpdateState.objects.all().delete()
             # await telegram_client.start(
             #     phone=telegram_user.phone, password=telegram_user.two_fa
             # )
@@ -51,7 +50,7 @@ def check_user(id):
                 telegram_user.save(
                     update_fields=["first_name", "last_name", "username"]
                 )
-
+            UpdateState.objects.all().delete()
         checking()
 
     except Exception as error:
@@ -104,7 +103,6 @@ def check_user(id):
 #                 message.reply_to.reply_to_msg_id if message.reply_to else None
 #             ),
 #         )
-
 #     send_mess()
 
 
@@ -141,7 +139,6 @@ def send_message(message_id, scene_id):
             api_hash=telegram_user.app.api_hash,
             proxy=telegram_user.proxy_server.get_proxy_dict(),
         )
-        UpdateState.objects.all().delete()
         async with telegram_client:
             chat = await telegram_client.get_entity(scene.telegram_group.username)
             sent_message = await telegram_client.send_message(
@@ -149,6 +146,7 @@ def send_message(message_id, scene_id):
                 message.text,
                 reply_to=reply_to_msg_id,
             )
+        UpdateState.objects.all().delete()
 
         TelegramGroupMessage.objects.create(
             telegram_group=scene.telegram_group,
@@ -176,10 +174,10 @@ def join_to_chat(telegram_user_id, chat_id):
             api_hash=telegram_user.app.api_hash,
             proxy=telegram_user.proxy_server.get_proxy_dict(),
         )
-        UpdateState.objects.all().delete()
         async with telegram_client:
             chat = await telegram_client.get_entity(chat_id)
             await telegram_client(JoinChannelRequest(chat))
+        UpdateState.objects.all().delete()
 
     join()
 

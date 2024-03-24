@@ -1,6 +1,11 @@
 from django.contrib import admin, messages
 from .models import Dialog, Message, Scene, Role
-from .tasks import start_scene, check_scene, create_periodic_task
+from .tasks import (
+    start_scene,
+    check_scene,
+    create_periodic_task_from_scene,
+    join_to_chat_users_from_scene,
+)
 from .forms import RoleInlineAdminForm, MessageInlineAdminForm, SceneAdminForm
 from dal_admin_filters import AutocompleteFilter
 from rangefilter.filters import DateTimeRangeFilter
@@ -65,7 +70,7 @@ class SceneAdmin(admin.ModelAdmin):
         ("start_date", DateTimeRangeFilter),
     ]
     inlines = [RoleInlineAdmin]
-    actions = ["start", "check_obj"]
+    actions = ["start", "check_obj", "join_to_chat_users", "create_tasks"]
     form = SceneAdminForm
 
     def start(self, request, queryset):
@@ -75,10 +80,17 @@ class SceneAdmin(admin.ModelAdmin):
 
     start.short_description = "Start scene"
 
-    def create_tasks(self, request, queryset):
-        messages.add_message(request, messages.INFO, "Create tasks")
+    def join_to_chat_users(self, request, queryset):
+        messages.add_message(request, messages.INFO, "Joining to chat users...")
         for obj in queryset:
-            create_periodic_task.delay(obj.id)
+            join_to_chat_users_from_scene.delay(obj.id)
+
+    join_to_chat_users.short_description = "Join to chat users"
+
+    def create_tasks(self, request, queryset):
+        messages.add_message(request, messages.INFO, "Create tasks from scenes...")
+        for obj in queryset:
+            create_periodic_task_from_scene.delay(obj.id)
 
     create_tasks.short_description = "Create periodic tasks"
 
