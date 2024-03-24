@@ -46,7 +46,7 @@ class Message(TimeStampedModel):
 
 
 class Scene(TimeStampedModel):
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     start_date = models.DateTimeField(default=timezone.now)
     dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name="scenes")
     telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
@@ -65,6 +65,7 @@ class Scene(TimeStampedModel):
             and self.are_users_ready
             and self.are_users_members_of_group
             and self.is_active
+            and not self.error
         )
 
     @property

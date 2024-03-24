@@ -6,7 +6,12 @@ from .tasks import check_proxy
 
 class ProxyServerAdmin(admin.ModelAdmin):
     actions = ['check_obj']
-    list_display = ("__str__", "created", "is_ready", "is_active")
+    list_display = (
+        "__str__",
+        "created",
+        "is_active",
+        "is_ready",
+    )
 
     def check_obj(self, request, queryset):
         messages.add_message(request, messages.INFO, 'Checking...')

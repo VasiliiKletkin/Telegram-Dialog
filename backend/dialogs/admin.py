@@ -57,8 +57,8 @@ class SceneAdmin(admin.ModelAdmin):
         "dialog",
         "telegram_group",
         "start_date",
-        "is_ready",
         "is_active",
+        "is_ready",
     )
     search_fields = ["dialog__name", "telegram_group__username"]
     ordering = ["-start_date"]

@@ -40,7 +40,7 @@ class TelegramUser(TimeStampedModel):
         (FEMALE, "Female"),
     )
 
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     id = models.BigIntegerField(primary_key=True)
     username = models.CharField(max_length=32, null=True, blank=True)
@@ -71,7 +71,7 @@ class TelegramUser(TimeStampedModel):
     @property
     def is_ready(self):
         return (
-            (self.proxy_server.is_ready and self.is_active)
+            (self.proxy_server.is_ready and self.is_active and not self.error)
             if self.proxy_server
             else False
         )

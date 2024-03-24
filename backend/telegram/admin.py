@@ -1,7 +1,12 @@
 from django.contrib import admin, messages
 
 from .models import TelegramGroup, TelegramUser, TelegramGroupMessage
-from .tasks import check_user, get_messages_from_group, generate_dialogs_from_group
+from .tasks import (
+    check_user,
+    get_messages_from_group,
+    generate_dialogs_from_group,
+    save_all_dialogs_from_user,
+)
 
 
 class TelegramGroupAdmin(admin.ModelAdmin):
@@ -24,8 +29,12 @@ class TelegramGroupAdmin(admin.ModelAdmin):
 
 
 class TelegramUserAdmin(admin.ModelAdmin):
-    actions = ["check_obj"]
-    list_display = ("__str__", "is_ready", "is_active")
+    actions = ["check_obj", "save_all_dialogs"]
+    list_display = (
+        "__str__",
+        "is_active",
+        "is_ready",
+    )
 
     def check_obj(self, request, queryset):
         messages.add_message(request, messages.INFO, "Checking...")
@@ -33,6 +42,13 @@ class TelegramUserAdmin(admin.ModelAdmin):
             check_user.delay(obj.id)
 
     check_obj.short_description = "Check User"
+
+    def save_all_dialogs(self, request, queryset):
+        messages.add_message(request, messages.INFO, "Save all dialogs...")
+        for obj in queryset:
+            save_all_dialogs_from_user.delay(obj.id)
+
+    save_all_dialogs.short_description = "Save all dialogs"
 
 
 class TelegramGroupMessageAdmin(admin.ModelAdmin):

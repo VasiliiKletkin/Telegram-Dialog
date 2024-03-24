@@ -16,9 +16,7 @@ def check_proxy(proxy_server_id):
 
     except Exception as error:
         proxy.error = str(error)
-        proxy.is_active = False
     else:
         proxy.error = None
-        proxy.is_active = True
     finally:
         proxy.save()

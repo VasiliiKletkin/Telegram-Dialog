@@ -26,18 +26,21 @@ def check_scene(scene_id):
 
         for user in telegram_users:
             check_user(user.id)
-            if not user.is_ready:
-                raise Exception(f"User {user} is not ready")
+            user.refresh_from_db()
 
-            if not user.is_member_of_group(scene.telegram_group.id):
+            if not user.is_active:
+                raise Exception(f"User {user} is not active")
+            elif not user.is_ready:
+                raise Exception(f"User {user} is not ready")
+            elif user.error:
+                raise Exception(f"User {user} error: {user.error}")
+            elif not user.is_member_of_group(scene.telegram_group.id):
                 raise Exception(f"User {user} is not member of group")
 
     except Exception as error:
         scene.error = str(error)
-        scene.is_active = False
     else:
         scene.error = None
-        scene.is_active = True
     finally:
         scene.save()
 
