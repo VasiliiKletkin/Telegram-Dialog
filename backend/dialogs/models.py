@@ -17,7 +17,7 @@ class Dialog(TimeStampedModel):
     # tags = TaggableManager(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.name} {self.roles_count} roles"
+        return f"{self.name[:50]} {self.roles_count} roles"
 
     @property
     def roles_count(self):
