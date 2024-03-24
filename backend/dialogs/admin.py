@@ -51,7 +51,6 @@ class SceneAdmin(admin.ModelAdmin):
     list_display = (
         "dialog",
         "telegram_group",
-        "roles_count",
         "start_date",
         "is_ready",
         "is_active",
