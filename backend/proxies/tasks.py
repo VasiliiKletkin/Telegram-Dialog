@@ -4,9 +4,9 @@ from .models import ProxyServer
 
 
 @app.task
-def check_proxy(id):
+def check_proxy(proxy_server_id):
     try:
-        proxy = ProxyServer.objects.get(id=id)
+        proxy = ProxyServer.objects.get(id=proxy_server_id)
         proxies = {'http': str(proxy)}
         response = requests.get('http://www.httpbin.org/ip', proxies=proxies,)
         resp_data = response.json()

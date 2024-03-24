@@ -20,15 +20,19 @@ from django.db.models import Count
 def check_user(id):
     try:
         telegram_user = TelegramUser.objects.get(id=id)
+        proxy_server = telegram_user.proxy_servers
 
-        if not telegram_user.proxy_server:
+        if not proxy_server:
             raise Exception("Proxy does not exist")
 
-        check_proxy(telegram_user.proxy_server_id)
-        telegram_user.proxy_server.refresh_from_db()
+        check_proxy(proxy_server)
+        proxy_server.refresh_from_db()
 
-        if not telegram_user.proxy_server.is_ready:
-            raise Exception(f"Proxy is not ready:{telegram_user.proxy_server.error}")
+        if not proxy_server.is_ready:
+            raise Exception("Proxy is not ready")
+
+        if proxy_server.error:
+            raise Exception(f"Proxy error:{proxy_server.error}")
 
         @async_to_sync
         async def checking():
@@ -184,8 +188,8 @@ def join_to_chat(telegram_user_id, chat_id):
 
 
 @app.task()
-def get_messages_from_group(id):
-    telegram_group = TelegramGroup.objects.get(id=id)
+def get_messages_from_group(group_id):
+    telegram_group = TelegramGroup.objects.get(id=group_id)
     telegram_user = TelegramUser.objects.filter(is_active=True).first()
 
     @async_to_sync
@@ -228,11 +232,8 @@ def get_answer_from_message(all_messages_from_group, ask_message):
         reply_to_msg_id=ask_message.message_id
     )
     dialogs_dict = {}
-    for (
-        msg
-    ) in (
-        answer_messages
-    ):  # ищем сообщения которые являются ответами на текущее сообщение
+    for msg in answer_messages:
+        # ищем сообщения которые являются ответами на текущее сообщение
         dialogs_dict[msg] = get_answer_from_message(all_messages_from_group, msg)
 
         context_messages = all_messages_from_group.filter(
@@ -240,7 +241,8 @@ def get_answer_from_message(all_messages_from_group, ask_message):
             user_id=msg.user_id,
             reply_to_msg_id__isnull=True,  # ищем сообщения которые не являются ответами в контексте
         )
-        for m in context_messages:  # проверям есть ли ответы на сообщения из контекста
+        for m in context_messages:
+            # проверям есть ли ответы на сообщения из контекста
             dialogs_dict[m] = get_answer_from_message(all_messages_from_group, m)
     return dialogs_dict
 
@@ -265,8 +267,8 @@ def create_messages(dialog_id, messages_dict, reply_to_msg_id=None):
 
 
 @app.task()
-def generate_dialogs_from_group(id):
-    telegram_group = TelegramGroup.objects.get(id=id)
+def generate_dialogs_from_group(group_id):
+    telegram_group = TelegramGroup.objects.get(id=group_id)
     messages_from_group = telegram_group.messages.all()
 
     answers_messages_ids = list(

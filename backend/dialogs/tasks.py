@@ -99,4 +99,3 @@ def join_to_chat_users_from_scene(scene_id):
     for user in telegram_users:
         if not user.is_member_of_group(scene.telegram_group.id):
             join_to_chat.delay(user.id, scene.telegram_group.username)
-    
