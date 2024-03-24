@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 from .models import Dialog, Message, Scene, Role
-from .tasks import start_scene, check_scene
+from .tasks import start_scene, check_scene, create_periodic_task
 from .forms import RoleInlineAdminForm, MessageInlineAdminForm, SceneAdminForm
 from dal_admin_filters import AutocompleteFilter
 from rangefilter.filters import DateTimeRangeFilter
@@ -62,11 +62,18 @@ class SceneAdmin(admin.ModelAdmin):
     form = SceneAdminForm
 
     def start(self, request, queryset):
-        messages.add_message(request, messages.INFO, "Scenes starting...")
+        messages.add_message(request, messages.INFO, "Scenes starting now")
         for obj in queryset:
             start_scene.delay(obj.id)
 
     start.short_description = "Start scene"
+
+    def create_tasks(self, request, queryset):
+        messages.add_message(request, messages.INFO, "Create tasks")
+        for obj in queryset:
+            create_periodic_task.delay(obj.id)
+
+    create_tasks.short_description = "Create periodic tasks"
 
     def check_obj(self, request, queryset):
         messages.add_message(request, messages.INFO, "Scenes checking...")

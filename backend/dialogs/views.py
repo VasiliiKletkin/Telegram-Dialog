@@ -7,15 +7,14 @@ from .models import Message, Dialog
 class MessageRoleNameAutocomplete(autocomplete.Select2ListView):
 
     def get_list(self):
-        qs = Message.objects.all()
+        qs = Message.objects.values_list("role_name", flat=True)
 
         if dialog := self.forwarded.get("dialog", None):
             qs = qs.filter(dialog=dialog)
 
         if self.q:
             qs = qs.filter(Q(role__icontains=self.q))
-        return qs.values_list("role_name", flat=True).distinct()
-
+        return qs.distinct()
 
 class MessageAutocomplete(autocomplete.Select2QuerySetView):
     queryset = Message.objects.all()

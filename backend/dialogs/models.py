@@ -30,15 +30,16 @@ class Message(TimeStampedModel):
     )
     role_name = models.CharField(max_length=255)
     text = models.TextField()
-    time = models.TimeField(default=time(0))
+    start_time = models.TimeField(default=time(0))
     reply_to_msg = models.ForeignKey(
         "Message", on_delete=models.CASCADE, null=True, blank=True
     )
+
     class Meta:
-        ordering = ["time"]
+        unique_together = ("dialog", "role_name", "start_time")
 
     def __str__(self):
-        return f"{self.id}:{self.role_name}: {self.text[:10]}"
+        return f"{self.id}, role:{self.role_name}, text:{self.text[:10]}"
 
     def clean(self) -> None:
         if self.reply_to_msg:
@@ -58,7 +59,7 @@ class Scene(TimeStampedModel):
         unique_together = ("dialog", "telegram_group")
 
     def __str__(self):
-        return f"{self.dialog.name} {self.telegram_group.username}"
+        return f"{self.id}, dialog:{self.dialog.name}, group:@{self.telegram_group.username}"
 
     @property
     def is_ready(self):
@@ -103,4 +104,4 @@ class Role(TimeStampedModel):
         unique_together = ("scene", "telegram_user", "name")
 
     def __str__(self):
-        return f"{self.telegram_user.username} {self.name}"
+        return f"name of role:{self.name}, username:{self.telegram_user.username}"

@@ -52,7 +52,7 @@ def start_scene(id):
     if not scene.is_ready:
         raise Exception("scene in not ready")
 
-    for message in scene.dialog.messages.order_by("time"):
+    for message in scene.dialog.messages.order_by("start_time"):
         role = scene.roles.get(name=message.role_name)
 
         target_time = timezone.now() + timedelta(
@@ -66,7 +66,7 @@ def start_scene(id):
 
         task = PeriodicTask.objects.create(
             clocked=clocked_schedule,
-            name=f"Send message id:{message.id}, user_id:{role.telegram_user.id}, group:@{scene.telegram_group.username}, time:{target_time_str}, message:{message.text[:15]}",
+            name=f"Send message id:{message.id}, user_id:{role.telegram_user.id}, group:@{scene.telegram_group.username}, start_time:{target_time_str}, message:{message.text[:15]}",
             one_off=True,
             task="telegram.tasks.send_message",
             args=json.dumps(
@@ -76,3 +76,20 @@ def start_scene(id):
                 ]
             ),
         )
+
+
+@app.task()
+def create_periodic_task(scene_id):
+    scene = Scene.objects.get(id=scene_id)
+    if not scene.is_ready:
+        return
+    start_time_str = scene.start_date.strftime("%d-%b-%Y:%H:%M:%S")
+    clocked_schedule = ClockedSchedule.objects.create(clocked_time=scene.start_date)
+    PeriodicTask.objects.create(
+        name=f"Start scene id:{scene.id}, dialog:{scene.dialog.name}, group:{scene.telegram_group.username}, start_time:{start_time_str}",
+        clocked=clocked_schedule,
+        one_off=True,
+        enabled=scene.is_active,
+        task="dialogs.tasks.start_scene",
+        args=json.dumps([scene.id]),
+    )

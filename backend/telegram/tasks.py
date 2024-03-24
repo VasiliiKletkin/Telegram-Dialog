@@ -1,9 +1,11 @@
+from datetime import timedelta
 import random
 import time
 
 from asgiref.sync import async_to_sync
 from core.celery import app
 from django.conf import settings
+from django.db.models import F
 from django_telethon.models import UpdateState
 from django_telethon.sessions import DjangoSession
 from proxies.tasks import check_proxy
@@ -213,6 +215,7 @@ def get_messages_from_group(id):
                         "reply_to_msg_id": (
                             message.reply_to.reply_to_msg_id
                             if message.reply_to
+                            and hasattr(message.reply_to, "reply_to_msg_id")
                             else None
                         ),
                     },
@@ -249,11 +252,11 @@ def create_messages(dialog_id, messages_dict, reply_to_msg_id=None):
             text=message.text,
             defaults={
                 "role_name": message.user_id if message.user_id else "Smbd",
-                "time": message.date,
+                "start_time": message.date,
                 "reply_to_msg_id": reply_to_msg_id,
             },
         )
-        msgs.append(msg)
+        msgs.append(msg.id)
         msgs.extend(create_messages(dialog_id, reply_messages, reply_to_msg_id=msg.id))
     return msgs
 
@@ -293,4 +296,8 @@ def generate_dialogs_from_group(id):
         dialog, created = Dialog.objects.get_or_create(name=key[:255])
         # add auto tagging
 
-        create_messages(dialog.id, dialogs[key])
+        msg_ids = create_messages(dialog.id, dialogs[key])
+        Message.objects.filter(id__in=msg_ids).update(
+            time=F("start_time")
+            - timedelta(seconds=msg.second, minutes=msg.minute, hours=msg.hour)
+        )
