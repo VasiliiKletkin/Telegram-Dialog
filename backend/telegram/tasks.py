@@ -51,6 +51,7 @@ def check_user(id):
                     update_fields=["first_name", "last_name", "username"]
                 )
             UpdateState.objects.all().delete()
+
         checking()
 
     except Exception as error:
@@ -227,15 +228,19 @@ def get_answer_from_message(all_messages_from_group, ask_message):
         reply_to_msg_id=ask_message.message_id
     )
     dialogs_dict = {}
-    for msg in answer_messages: #ищем сообщения которые являются ответами на текущее сообщение
-        dialogs_dict[msg] = get_answer_from_message(all_messages_from_group, msg) 
+    for (
+        msg
+    ) in (
+        answer_messages
+    ):  # ищем сообщения которые являются ответами на текущее сообщение
+        dialogs_dict[msg] = get_answer_from_message(all_messages_from_group, msg)
 
         context_messages = all_messages_from_group.filter(
             message_id__in=range(msg.message_id + 1, msg.message_id + 3),
             user_id=msg.user_id,
-            reply_to_msg_id__isnull=True, #ищем сообщения которые не являются ответами в контексте
+            reply_to_msg_id__isnull=True,  # ищем сообщения которые не являются ответами в контексте
         )
-        for m in context_messages: #проверям есть ли ответы на сообщения из контекста
+        for m in context_messages:  # проверям есть ли ответы на сообщения из контекста
             dialogs_dict[m] = get_answer_from_message(all_messages_from_group, m)
     return dialogs_dict
 
@@ -281,7 +286,9 @@ def generate_dialogs_from_group(id):
             user_id=msg.user_id,
             message_id__in=range(msg.message_id - 2, msg.message_id + 2),
         )
-        if context_messages.filter(reply_to_msg_id__isnull=False).exists(): #если текущий контекст является ответом на другое сообщение
+        if context_messages.filter(
+            reply_to_msg_id__isnull=False
+        ).exists():  # если текущий контекст является ответом на другое сообщение
             continue
 
         dialog = {}
@@ -295,7 +302,6 @@ def generate_dialogs_from_group(id):
         # add auto tagging
 
         msg_ids = create_messages(dialog.id, dialogs[key])
-        print(msg_ids)
         Message.objects.filter(id__in=msg_ids).update(
             start_time=F("start_time")
             - timedelta(
