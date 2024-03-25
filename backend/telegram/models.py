@@ -24,7 +24,6 @@ class TelegramGroupMessage(models.Model):
     reply_to_msg_id = models.BigIntegerField(null=True, blank=True)
 
     class Meta:
-        ordering = ["date"]
         unique_together = ("telegram_group", "message_id")
 
     def __str__(self):
