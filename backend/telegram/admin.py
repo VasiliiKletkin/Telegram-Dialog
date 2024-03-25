@@ -1,6 +1,8 @@
 from django.contrib import admin, messages
 from rangefilter.filters import DateTimeRangeFilter
 
+from .forms import TelegramGroupAdminForm
+
 from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
 from .tasks import (
     check_user,
@@ -11,8 +13,9 @@ from .tasks import (
 
 
 class TelegramGroupAdmin(admin.ModelAdmin):
+    form = TelegramGroupAdminForm
     actions = ["get_messages", "generate_dialogs"]
-    # list_display = ("__str__")
+    list_display = ("name", "username", "created", "is_active")
 
     def get_messages(self, request, queryset):
         messages.add_message(request, messages.INFO, "Parse messages from group...")

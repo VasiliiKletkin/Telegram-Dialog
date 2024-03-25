@@ -24,9 +24,9 @@ def save_dialogs_from_user(telegram_user_id):
     for dialog in dialogs:
         if hasattr(dialog.entity, "title"):
             telegram_group, created = TelegramGroup.objects.get_or_create(
-                    name=dialog.entity.title,
-                    username=dialog.entity.username,
-                )
+                name=dialog.entity.title,
+                username=dialog.entity.username,
+            )
             telegram_user.telegram_groups.add(telegram_group)
 
 
@@ -245,7 +245,9 @@ def generate_dialogs_from_group(group_id):
             dialog[m] = get_answer_from_message(messages_from_group, m)
 
         dialog, created = Dialog.objects.get_or_create(name=key[:255])
-        # add auto tagging
+
+        if created:
+            dialog.tags.add(*telegram_group.tags.all())
 
         msg_ids = create_messages(dialog.id, dialogs[key])
         Message.objects.filter(id__in=msg_ids).update(

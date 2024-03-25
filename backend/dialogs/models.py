@@ -1,20 +1,17 @@
-import json
+from datetime import time
+
+from django.db import models
 from django.forms import ValidationError
 from django.utils import timezone
-from django.db import models
-from django.db.models import Q
 from model_utils.models import TimeStampedModel
-from telegram.models import TelegramGroup, TelegramUser
 from taggit.managers import TaggableManager
-from django_celery_beat.models import ClockedSchedule, PeriodicTask
-from datetime import time
+from telegram.models import TelegramGroup, TelegramUser
 
 
 class Dialog(TimeStampedModel):
     is_active = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
-
-    # tags = TaggableManager(null=True, blank=True)
+    tags = TaggableManager(blank=True)
 
     def __str__(self):
         return f"{self.name[:50]} {self.roles_count} roles"
@@ -83,7 +80,8 @@ class Scene(TimeStampedModel):
         roles = self.roles.all()
         telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
         return all(
-            user.is_member_of_group(self.telegram_group.username) for user in telegram_users
+            user.is_member_of_group(self.telegram_group.username)
+            for user in telegram_users
         )
 
 

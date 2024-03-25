@@ -1,7 +1,7 @@
 from dal import autocomplete
 from django.forms import ModelForm, Textarea
 
-from .models import Message, Role, Scene
+from .models import Message, Role, Scene, Dialog
 
 
 class RoleInlineAdminForm(ModelForm):
@@ -26,7 +26,8 @@ class MessageInlineAdminForm(ModelForm):
             "reply_to_msg": autocomplete.ListSelect2(
                 url="reply_to_msg-autocomplete", forward=["dialog"]
             ),
-            "text": Textarea(attrs={'rows': 4, 'cols': 70}), }
+            "text": Textarea(attrs={"rows": 4, "cols": 70}),
+        }
 
 
 class SceneAdminForm(ModelForm):
@@ -40,4 +41,13 @@ class SceneAdminForm(ModelForm):
             "telegram_group": autocomplete.ModelSelect2(
                 url="telegram_group-autocomplete"
             ),
+        }
+
+
+class DialogAdminForm(ModelForm):
+    class Meta:
+        model = Dialog
+        fields = "__all__"
+        widgets = {
+            "tags": autocomplete.TaggitSelect2(url="tag-autocomplete"),
         }

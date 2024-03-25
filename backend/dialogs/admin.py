@@ -6,7 +6,12 @@ from .tasks import (
     create_periodic_task_from_scene,
     join_to_chat_users_from_scene,
 )
-from .forms import RoleInlineAdminForm, MessageInlineAdminForm, SceneAdminForm
+from .forms import (
+    RoleInlineAdminForm,
+    MessageInlineAdminForm,
+    SceneAdminForm,
+    DialogAdminForm,
+)
 from dal_admin_filters import AutocompleteFilter
 from rangefilter.filters import DateTimeRangeFilter
 
@@ -27,6 +32,7 @@ class DialogAdmin(admin.ModelAdmin):
         ("created", DateTimeRangeFilter),
     ]
     inlines = [MessageInlineAdmin]
+    form = DialogAdminForm
 
 
 class RoleInlineAdmin(admin.TabularInline):

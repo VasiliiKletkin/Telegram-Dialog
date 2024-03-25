@@ -3,12 +3,14 @@ from django_telethon.models import App, ClientSession
 from model_utils.models import TimeStampedModel
 from proxies.models import ProxyServer
 from django.db.models import Q
+from taggit.managers import TaggableManager
 
 
 class TelegramGroup(TimeStampedModel):
     is_active = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
     username = models.CharField(max_length=255, unique=True)
+    tags = TaggableManager(blank=True)
 
     def __str__(self):
         return f"{self.name} - @{self.username}"

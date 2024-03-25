@@ -13,4 +13,9 @@ urlpatterns = [
         TelegramGroupAutocomplete.as_view(),
         name="telegram_group-autocomplete",
     ),
+    path(
+        "tag-autocomplete/",
+        TelegramGroupAutocomplete.as_view(),
+        name="tag-autocomplete",
+    ),
 ]
