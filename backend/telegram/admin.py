@@ -5,7 +5,7 @@ from .tasks import (
     check_user,
     get_messages_from_group,
     generate_dialogs_from_group,
-    save_all_dialogs_from_user,
+    save_dialogs_from_user,
 )
 
 
@@ -46,13 +46,13 @@ class TelegramUserAdmin(admin.ModelAdmin):
     def save_all_dialogs(self, request, queryset):
         messages.add_message(request, messages.INFO, "Save all dialogs...")
         for obj in queryset:
-            save_all_dialogs_from_user.delay(obj.id)
+            save_dialogs_from_user.delay(obj.id)
 
     save_all_dialogs.short_description = "Save all dialogs"
 
 
 class TelegramGroupMessageAdmin(admin.ModelAdmin):
-    search_fields = ("text", "reply_to_msg_id")
+    search_fields = ("text", "user_id")
     ordering = ("-date",)
 
 

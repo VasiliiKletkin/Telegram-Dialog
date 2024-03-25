@@ -13,7 +13,7 @@ from .utils import (get_dialogs, get_me, get_messages, join_to_chat,
 
 
 @app.task()
-def save_all_dialogs_from_user(telegram_user_id):
+def save_dialogs_from_user(telegram_user_id):
     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
     dialogs = get_dialogs()
     entities = []
