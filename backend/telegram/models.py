@@ -7,7 +7,7 @@ from django.db.models import Q
 
 class TelegramGroup(TimeStampedModel):
     name = models.CharField(max_length=255)
-    username = models.CharField(max_length=255)
+    username = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
         return f"{self.name} - @{self.username}"
@@ -76,8 +76,8 @@ class TelegramUser(TimeStampedModel):
             else False
         )
 
-    def is_member_of_group(self, group_id):
-        group = TelegramGroup.objects.get(id=group_id)
+    def is_member_of_group(self, username):
+        group = TelegramGroup.objects.get(username=username)
         return self.client_session.entity_set.filter(
             Q(name=group.name) | Q(username=group.username)
         ).exists()

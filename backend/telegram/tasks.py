@@ -15,7 +15,12 @@ from .utils import (get_dialogs, get_me, get_messages, join_to_chat,
 @app.task()
 def save_dialogs_from_user(telegram_user_id):
     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
-    dialogs = get_dialogs()
+    dialogs = get_dialogs(
+        client_session=telegram_user.client_session,
+        api_id=telegram_user.app.api_id,
+        api_hash=telegram_user.app.api_hash,
+        proxy_dict=telegram_user.proxy_server.get_proxy_dict(),
+    )
     entities = []
     for dialog in dialogs:
         entities.append(
@@ -147,6 +152,8 @@ def join_user_to_chat(telegram_user_id, chat_id):
         proxy_dict=telegram_user.proxy_server.get_proxy_dict(),
         chat_id=chat_id,
     )
+
+    save_dialogs_from_user.delay(telegram_user_id)
 
 
 @app.task()

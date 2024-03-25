@@ -83,7 +83,7 @@ class Scene(TimeStampedModel):
         roles = self.roles.all()
         telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
         return all(
-            user.is_member_of_group(self.telegram_group.id) for user in telegram_users
+            user.is_member_of_group(self.telegram_group.username) for user in telegram_users
         )
 
 
