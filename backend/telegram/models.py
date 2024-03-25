@@ -66,7 +66,7 @@ class TelegramUser(TimeStampedModel):
     error = models.TextField(null=True, blank=True)
 
     telegram_groups = models.ManyToManyField(
-        TelegramGroup, related_name="telegram_users"
+        TelegramGroup, related_name="telegram_users", null=True, blank=True
     )
 
     def __str__(self):
