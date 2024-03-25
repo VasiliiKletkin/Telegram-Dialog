@@ -70,7 +70,7 @@ class SceneAdmin(admin.ModelAdmin):
         ("start_date", DateTimeRangeFilter),
     ]
     inlines = [RoleInlineAdmin]
-    actions = ["start", "check_obj", "join_to_chat_users", "create_tasks"]
+    actions = ["check_obj", "start", "join_to_chat_users", "create_tasks"]
     form = SceneAdminForm
 
     def start(self, request, queryset):

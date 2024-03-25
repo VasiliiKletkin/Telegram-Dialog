@@ -56,9 +56,9 @@ def start_scene(scene_id):
         role = scene.roles.get(name=message.role_name)
 
         target_time = timezone.now() + timedelta(
-            seconds=message.time.second,
-            minutes=message.time.minute,
-            hours=message.time.hour,
+            seconds=message.start_time.second,
+            minutes=message.start_time.minute,
+            hours=message.start_time.hour,
         )
         target_time_str = target_time.strftime("%d-%b-%Y:%H:%M:%S")
         clocked_schedule = ClockedSchedule.objects.create(clocked_time=target_time)
@@ -79,10 +79,13 @@ def start_scene(scene_id):
 @app.task()
 def create_periodic_task_from_scene(scene_id):
     scene = Scene.objects.get(id=scene_id)
+
     if not scene.is_ready:
-        return
+        raise Exception("scene in not ready")
+
     start_time_str = scene.start_date.strftime("%d-%b-%Y:%H:%M:%S")
     clocked_schedule = ClockedSchedule.objects.create(clocked_time=scene.start_date)
+
     PeriodicTask.objects.create(
         name=f"Start scene id:{scene.id}, dialog:{scene.dialog.name}, group:{scene.telegram_group.username}, start_time:{start_time_str}",
         clocked=clocked_schedule,

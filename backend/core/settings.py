@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "telegram",
     "dialogs",
     "imports",
+    "telethonupdt",
 ]
 
 MIDDLEWARE = [

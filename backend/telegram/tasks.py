@@ -1,57 +1,39 @@
 from datetime import timedelta
-from django_telethon.models import Entity
 
-from asgiref.sync import async_to_sync
 from core.celery import app
-from django.conf import settings
-from django.db.models import F
-from django_telethon.models import UpdateState
-from django_telethon.sessions import DjangoSession
-from proxies.tasks import check_proxy
-from telethon.sync import TelegramClient
-from telethon.tl.functions.channels import JoinChannelRequest
-from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
 from dialogs.models import Dialog, Message, Scene
-from django.db.models import Count
+from django.conf import settings
+from django.db.models import Count, F
+from django_telethon.models import Entity
+from proxies.tasks import check_proxy
+
+from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
+from .utils import (get_dialogs, get_me, get_messages, join_to_chat,
+                    send_message)
 
 
 @app.task()
 def save_all_dialogs_from_user(telegram_user_id):
     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
+    dialogs = get_dialogs()
     entities = []
-
-    @async_to_sync
-    async def get_all_dialogs():
-        telegram_client = TelegramClient(
-            session=DjangoSession(client_session=telegram_user.client_session),
-            api_id=telegram_user.app.api_id,
-            api_hash=telegram_user.app.api_hash,
-            proxy=telegram_user.proxy_server.get_proxy_dict(),
+    for dialog in dialogs:
+        entities.append(
+            Entity(
+                entity_id=dialog.id,
+                client_session=telegram_user.client_session,
+                hash_value=dialog.entity.access_hash,
+                username=dialog.entity.username,
+                phone=(
+                    dialog.entity.phone if hasattr(dialog.entity, "phone") else None
+                ),
+                name=(
+                    dialog.entity.title
+                    if hasattr(dialog.entity, "title")
+                    else f"{dialog.entity.first_name} {dialog.entity.last_name}"
+                ),
+            )
         )
-        async with telegram_client:
-            async for dialog in telegram_client.iter_dialogs():
-                entities.append(
-                    Entity(
-                        entity_id=dialog.id,
-                        client_session=telegram_user.client_session,
-                        hash_value=dialog.entity.access_hash,
-                        username=dialog.entity.username,
-                        phone=(
-                            dialog.entity.phone
-                            if hasattr(dialog.entity, "phone")
-                            else None
-                        ),
-                        name=(
-                            dialog.entity.title
-                            if hasattr(dialog.entity, "title")
-                            else f"{dialog.entity.first_name} {dialog.entity.last_name}"
-                        ),
-                    )
-                )
-            UpdateState.objects.all().delete()
-
-    get_all_dialogs()
-
     telegram_user.client_session.entity_set.bulk_create(
         entities,
         ignore_conflicts=True,
@@ -77,27 +59,16 @@ def check_user(user_id):
         elif proxy_server.error:
             raise Exception(f"Proxy error:{proxy_server.error}")
 
-        @async_to_sync
-        async def checking():
-            telegram_client = TelegramClient(
-                session=DjangoSession(client_session=telegram_user.client_session),
-                api_id=telegram_user.app.api_id,
-                api_hash=telegram_user.app.api_hash,
-                proxy=telegram_user.proxy_server.get_proxy_dict(),
-            )
-            # await telegram_client.start(
-            #     phone=telegram_user.phone, password=telegram_user.two_fa
-            # )
-            async with telegram_client:
-                me = await telegram_client.get_me()
-                telegram_user.first_name = me.first_name
-                telegram_user.last_name = me.last_name
-                telegram_user.username = me.username
-                UpdateState.objects.all().delete()
+        me = get_me(
+            client_session=telegram_user.client_session,
+            api_id=telegram_user.app.api_id,
+            api_hash=telegram_user.app.api_hash,
+            proxy_dict=telegram_user.proxy_server.get_proxy_dict(),
+        )
 
-        checking()
-
-        telegram_user.save(update_fields=["first_name", "last_name", "username"])
+        telegram_user.first_name = me.first_name
+        telegram_user.last_name = me.last_name
+        telegram_user.username = me.username
 
     except Exception as error:
         telegram_user.error = str(error)
@@ -106,7 +77,7 @@ def check_user(user_id):
     finally:
         telegram_user.save()
 
-    save_all_dialogs_from_user.delay(user_id)
+    # save_all_dialogs_from_user.delay(user_id)
 
 
 #     if waiting:
@@ -119,7 +90,7 @@ def check_user(user_id):
 
 
 @app.task()
-def send_message(message_id, scene_id):
+def send_message_from_scene(message_id, scene_id):
     scene = Scene.objects.get(id=scene_id)
     message = Message.objects.get(id=message_id)
     role = scene.roles.get(name=message.role_name)
@@ -143,26 +114,15 @@ def send_message(message_id, scene_id):
         except TelegramGroupMessage.DoesNotExist:
             pass
 
-    sent_message = None
-
-    @async_to_sync
-    async def send_mess():
-        telegram_client = TelegramClient(
-            session=DjangoSession(client_session=telegram_user.client_session),
-            api_id=telegram_user.app.api_id,
-            api_hash=telegram_user.app.api_hash,
-            proxy=telegram_user.proxy_server.get_proxy_dict(),
-        )
-        async with telegram_client:
-            chat = await telegram_client.get_entity(scene.telegram_group.username)
-            sent_message = await telegram_client.send_message(
-                chat,
-                message.text,
-                reply_to=reply_to_msg_id,
-            )
-            UpdateState.objects.all().delete()
-
-    send_mess()
+    sent_message = send_message(
+        client_session=telegram_user.client_session,
+        api_id=telegram_user.app.api_id,
+        api_hash=telegram_user.app.api_hash,
+        proxy_dict=telegram_user.proxy_server.get_proxy_dict(),
+        username=scene.telegram_group.username,
+        text=message.text,
+        reply_to_msg_id=reply_to_msg_id,
+    )
 
     TelegramGroupMessage.objects.create(
         telegram_group=scene.telegram_group,
@@ -177,23 +137,16 @@ def send_message(message_id, scene_id):
 
 
 @app.task()
-def join_to_chat(telegram_user_id, chat_id):
+def join_user_to_chat(telegram_user_id, chat_id):
     telegram_user = TelegramUser.objects.get(id=telegram_user_id)
 
-    @async_to_sync
-    async def join():
-        telegram_client = TelegramClient(
-            session=DjangoSession(client_session=telegram_user.client_session),
-            api_id=telegram_user.app.api_id,
-            api_hash=telegram_user.app.api_hash,
-            proxy=telegram_user.proxy_server.get_proxy_dict(),
-        )
-        async with telegram_client:
-            chat = await telegram_client.get_entity(chat_id)
-            await telegram_client(JoinChannelRequest(chat))
-            UpdateState.objects.all().delete()
-
-    join()
+    join_to_chat(
+        client_session=telegram_user.client_session,
+        api_id=telegram_user.app.api_id,
+        api_hash=telegram_user.app.api_hash,
+        proxy_dict=telegram_user.proxy_server.get_proxy_dict(),
+        chat_id=chat_id,
+    )
 
 
 @app.task()
@@ -201,39 +154,33 @@ def get_messages_from_group(group_id):
     telegram_group = TelegramGroup.objects.get(id=group_id)
     telegram_user = TelegramUser.objects.filter(is_active=True).first()
 
-    @async_to_sync
-    async def get_mess():
-        telegram_client = TelegramClient(
-            session=DjangoSession(client_session=telegram_user.client_session),
-            api_id=telegram_user.app.api_id,
-            api_hash=telegram_user.app.api_hash,
-            proxy=telegram_user.proxy_server.get_proxy_dict(),
+    messages = get_messages(
+        client_session=telegram_user.client_session,
+        api_id=telegram_user.app.api_id,
+        api_hash=telegram_user.app.api_hash,
+        proxy_dict=telegram_user.proxy_server.get_proxy_dict(),
+        username=telegram_group.username,
+    )
+    for message in messages:
+        # FIXME change on bulk update
+        TelegramGroupMessage.objects.get_or_create(
+            message_id=message.id,
+            telegram_group=telegram_group,
+            defaults={
+                "text": message.text,
+                "date": message.date,
+                "user_id": (
+                    message.from_id.user_id
+                    if message.from_id and hasattr(message.from_id, "user_id")
+                    else None
+                ),
+                "reply_to_msg_id": (
+                    message.reply_to.reply_to_msg_id
+                    if message.reply_to and hasattr(message.reply_to, "reply_to_msg_id")
+                    else None
+                ),
+            },
         )
-        async with telegram_client:
-            group = await telegram_client.get_entity(telegram_group.username)
-            async for message in telegram_client.iter_messages(group, 1000): #FIXME change on bulk update
-                TelegramGroupMessage.objects.get_or_create(
-                    message_id=message.id,
-                    telegram_group=telegram_group,
-                    defaults={
-                        "text": message.text,
-                        "date": message.date,
-                        "user_id": (
-                            message.from_id.user_id
-                            if message.from_id and hasattr(message.from_id, "user_id")
-                            else None
-                        ),
-                        "reply_to_msg_id": (
-                            message.reply_to.reply_to_msg_id
-                            if message.reply_to
-                            and hasattr(message.reply_to, "reply_to_msg_id")
-                            else None
-                        ),
-                    },
-                )
-            UpdateState.objects.all().delete()
-
-    get_mess()
 
 
 def get_answer_from_message(all_messages_from_group, ask_message):
