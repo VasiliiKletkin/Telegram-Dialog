@@ -10,6 +10,9 @@ class TelegramGroup(TimeStampedModel):
     name = models.CharField(max_length=255)
     username = models.CharField(max_length=255, unique=True)
 
+    class Meta:
+        unique_together = "username"
+
     def __str__(self):
         return f"{self.name} - @{self.username}"
 
@@ -65,7 +68,9 @@ class TelegramUser(TimeStampedModel):
     app_json = models.JSONField(null=True, blank=True)
     error = models.TextField(null=True, blank=True)
 
-    telegram_groups = models.ManyToManyField(TelegramGroup, related_name="telegram_users")
+    telegram_groups = models.ManyToManyField(
+        TelegramGroup, related_name="telegram_users"
+    )
 
     def __str__(self):
         return f"{self.id} - @{self.username} - {self.first_name}  {self.last_name}"
