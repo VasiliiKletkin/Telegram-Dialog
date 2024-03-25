@@ -88,3 +88,17 @@ async def join_to_chat(client_session, api_id, api_hash, proxy_dict, chat_id):
     async with telegram_client:
         chat = await telegram_client.get_entity(chat_id)
         await telegram_client(JoinChannelRequest(chat))
+
+
+THEMES = {
+    ("документы", "документ"): "Документы",
+}
+
+
+def get_tags_from_str(text):
+    tags = []
+    for word in text.split():
+        for theme in THEMES:
+            if word.lower() in theme:
+                tags.append(THEMES[theme])
+    return tags

@@ -2,13 +2,19 @@ from datetime import timedelta
 
 from core.celery import app
 from dialogs.models import Dialog, Message, Scene
-from django.conf import settings
 from django.db.models import Count, F
-from django_telethon.models import Entity
 from proxies.tasks import check_proxy
+from taggit.models import Tag
 
 from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
-from .utils import get_dialogs, get_me, get_messages, join_to_chat, send_message
+from .utils import (
+    get_dialogs,
+    get_me,
+    get_messages,
+    get_tags_from_str,
+    join_to_chat,
+    send_message,
+)
 
 
 @app.task()
@@ -238,7 +244,7 @@ def generate_dialogs_from_group(group_id):
             continue
 
         dialog = {}
-        key = f"{telegram_group.name[:50]}:{msg.text[:100]}:{msg.user_id}"
+        key = f"{msg.text}"
         dialogs[key] = dialog
 
         for m in context_messages:
@@ -248,6 +254,8 @@ def generate_dialogs_from_group(group_id):
 
         if created:
             dialog.tags.add(*telegram_group.tags.all())
+            tags = [Tag(name=tag, slug=tag) for tag in get_tags_from_str(msg.text)]
+            dialog.tags.bulk_create(tags, ignore_conflicts=True)
 
         msg_ids = create_messages(dialog.id, dialogs[key])
         Message.objects.filter(id__in=msg_ids).update(
