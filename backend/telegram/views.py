@@ -10,5 +10,5 @@ class TelegramUserAutocomplete(autocomplete.Select2QuerySetView):
 
 
 class TelegramGroupAutocomplete(autocomplete.Select2QuerySetView):
-    queryset = TelegramGroup.objects.all()
+    queryset = TelegramGroup.objects.filter(is_active=True)
     search_fields = ["name", "username", "id"]
