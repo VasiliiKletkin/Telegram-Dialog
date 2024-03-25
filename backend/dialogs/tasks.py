@@ -84,9 +84,9 @@ def create_periodic_task_from_scene(scene_id):
 
     start_time_str = scene.start_date.strftime("%d-%b-%Y:%H:%M:%S")
     clocked_schedule = ClockedSchedule.objects.create(clocked_time=scene.start_date)
-
+    task_name = f"Start scene id:{scene.id}, time:{start_time_str}, group:{scene.telegram_group.username}, dialog:{scene.dialog.name},"
     PeriodicTask.objects.create(
-        name=f"Start scene id:{scene.id}, dialog:{scene.dialog.name}, group:{scene.telegram_group.username}, start_time:{start_time_str}",
+        name=task_name[:200],
         clocked=clocked_schedule,
         one_off=True,
         enabled=scene.is_active,
