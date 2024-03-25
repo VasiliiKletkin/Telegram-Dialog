@@ -15,6 +15,7 @@ class MessageInlineAdmin(admin.TabularInline):
     form = MessageInlineAdminForm
     model = Message
     extra = 1
+    ordering = ["start_time"]
 
 
 class DialogAdmin(admin.ModelAdmin):

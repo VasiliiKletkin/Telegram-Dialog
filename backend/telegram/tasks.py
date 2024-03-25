@@ -8,8 +8,7 @@ from django_telethon.models import Entity
 from proxies.tasks import check_proxy
 
 from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
-from .utils import (get_dialogs, get_me, get_messages, join_to_chat,
-                    send_message)
+from .utils import get_dialogs, get_me, get_messages, join_to_chat, send_message
 
 
 @app.task()
@@ -21,34 +20,20 @@ def save_dialogs_from_user(telegram_user_id):
         api_hash=telegram_user.app.api_hash,
         proxy_dict=telegram_user.proxy_server.get_proxy_dict(),
     )
-    entities = []
+
     for dialog in dialogs:
-        entities.append(
-            Entity(
-                entity_id=dialog.id,
-                client_session=telegram_user.client_session,
-                hash_value=dialog.entity.access_hash,
-                username=dialog.entity.username,
-                phone=(
-                    dialog.entity.phone if hasattr(dialog.entity, "phone") else None
-                ),
-                name=(
-                    dialog.entity.title
-                    if hasattr(dialog.entity, "title")
-                    else f"{dialog.entity.first_name} {dialog.entity.last_name}"
-                ),
-            )
-        )
-    telegram_user.client_session.entity_set.bulk_create(
-        entities,
-        ignore_conflicts=True,
-    )
+        if hasattr(dialog.entity, "title"):
+            telegram_group, created = TelegramGroup.objects.get_or_create(
+                    name=dialog.entity.title,
+                    username=dialog.entity.username,
+                )
+            telegram_user.telegram_groups.add(telegram_group)
 
 
 @app.task()
-def check_user(user_id):
+def check_user(telegram_user_id):
     try:
-        telegram_user = TelegramUser.objects.get(id=user_id)
+        telegram_user = TelegramUser.objects.get(id=telegram_user_id)
         proxy_server = telegram_user.proxy_server
 
         if not proxy_server:
@@ -70,7 +55,6 @@ def check_user(user_id):
             api_hash=telegram_user.app.api_hash,
             proxy_dict=telegram_user.proxy_server.get_proxy_dict(),
         )
-
         telegram_user.first_name = me.first_name
         telegram_user.last_name = me.last_name
         telegram_user.username = me.username
@@ -79,10 +63,9 @@ def check_user(user_id):
         telegram_user.error = str(error)
     else:
         telegram_user.error = None
+        save_dialogs_from_user(telegram_user_id=telegram_user_id)
     finally:
         telegram_user.save()
-
-    # save_all_dialogs_from_user.delay(user_id)
 
 
 #     if waiting:
@@ -152,8 +135,6 @@ def join_user_to_chat(telegram_user_id, chat_id):
         proxy_dict=telegram_user.proxy_server.get_proxy_dict(),
         chat_id=chat_id,
     )
-
-    save_dialogs_from_user.delay(telegram_user_id)
 
 
 @app.task()

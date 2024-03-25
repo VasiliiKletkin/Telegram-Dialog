@@ -1,10 +1,11 @@
 from django.contrib import admin, messages
+from rangefilter.filters import DateTimeRangeFilter
 
-from .models import TelegramGroup, TelegramUser, TelegramGroupMessage
+from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
 from .tasks import (
     check_user,
-    get_messages_from_group,
     generate_dialogs_from_group,
+    get_messages_from_group,
     save_dialogs_from_user,
 )
 
@@ -54,6 +55,10 @@ class TelegramUserAdmin(admin.ModelAdmin):
 class TelegramGroupMessageAdmin(admin.ModelAdmin):
     search_fields = ("text", "user_id")
     ordering = ("-date",)
+    list_display = ("__str__", "user_id", "message_id", "reply_to_msg_id", "date")
+    list_filter = [
+        ("date", DateTimeRangeFilter),
+    ]
 
 
 admin.site.register(TelegramGroupMessage, TelegramGroupMessageAdmin)

@@ -2,7 +2,6 @@ import json
 from datetime import timedelta
 
 from core.celery import app
-from django.db.models import Q
 from django.utils import timezone
 from django_celery_beat.models import ClockedSchedule, PeriodicTask
 from telegram.models import TelegramUser

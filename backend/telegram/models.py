@@ -6,6 +6,7 @@ from django.db.models import Q
 
 
 class TelegramGroup(TimeStampedModel):
+    is_active = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
     username = models.CharField(max_length=255, unique=True)
 
@@ -64,6 +65,8 @@ class TelegramUser(TimeStampedModel):
     app_json = models.JSONField(null=True, blank=True)
     error = models.TextField(null=True, blank=True)
 
+    telegram_groups = models.ManyToManyField(TelegramGroup, related_name="telegram_users")
+
     def __str__(self):
         return f"{self.id} - @{self.username} - {self.first_name}  {self.last_name}"
 
@@ -76,7 +79,4 @@ class TelegramUser(TimeStampedModel):
         )
 
     def is_member_of_group(self, username):
-        group = TelegramGroup.objects.get(username=username)
-        return self.client_session.entity_set.filter(
-            Q(name=group.name) | Q(username=group.username)
-        ).exists()
+        return self.telegram_groups.filter(username=username).exists()

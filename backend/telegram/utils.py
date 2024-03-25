@@ -12,10 +12,9 @@ async def get_dialogs(client_session, api_id, api_hash, proxy_dict):
         api_hash=api_hash,
         proxy=proxy_dict,
     )
-
     dialogs = []
     async with telegram_client:
-        dialogs = await telegram_client.get_dialogs(limit=100)
+        dialogs = await telegram_client.get_dialogs(limit=200)
     return dialogs
 
 
