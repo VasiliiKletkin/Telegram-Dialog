@@ -2,7 +2,7 @@ from django.contrib import admin, messages
 from rangefilter.filters import DateTimeRangeFilter
 
 from .forms import TelegramGroupAdminForm, TelegramUserAdminForm
-
+from dal_admin_filters import AutocompleteFilter
 from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
 from .tasks import (
     check_user,
@@ -32,11 +32,26 @@ class TelegramGroupAdmin(admin.ModelAdmin):
     generate_dialogs.short_description = "Generate dialogs"
 
 
+class TelegramGroupFilterAdmin(AutocompleteFilter):
+    title = "Telegram Group"
+    field_name = "telegram_groups"
+    autocomplete_url = "telegram_group-autocomplete"
+
+
 class TelegramUserAdmin(admin.ModelAdmin):
     actions = ["check_obj", "save_all_dialogs"]
+    list_filter = [
+        ("is_active", admin.BooleanFieldListFilter),
+        # ("proxy_server", admin.FieldListFilter),
+        # TelegramGroupFilterAdmin,
+        "sex",
+        ("created", DateTimeRangeFilter),
+    ]
     list_display = (
         "__str__",
         "is_active",
+        "sex",
+        "created",
         "is_ready",
     )
     form = TelegramUserAdminForm
