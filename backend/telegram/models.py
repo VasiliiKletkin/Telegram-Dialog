@@ -34,8 +34,8 @@ class TelegramGroupMessage(models.Model):
 
 
 class TelegramUser(TimeStampedModel):
-    MALE = 0
-    FEMALE = 1
+    FEMALE = 0
+    MALE = 1
 
     SEX_CHOICE = (
         (MALE, "Male"),
