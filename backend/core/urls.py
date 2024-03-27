@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("dialogs/", include("dialogs.urls")),
     path("telegram/", include("telegram.urls")),
+    path("proxies/", include("proxies.urls")),
 ]
 
 if settings.DEBUG:

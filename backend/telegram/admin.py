@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from rangefilter.filters import DateTimeRangeFilter
 
-from .forms import TelegramGroupAdminForm
+from .forms import TelegramGroupAdminForm, TelegramUserAdminForm
 
 from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
 from .tasks import (
@@ -39,6 +39,7 @@ class TelegramUserAdmin(admin.ModelAdmin):
         "is_active",
         "is_ready",
     )
+    form = TelegramUserAdminForm
 
     def check_obj(self, request, queryset):
         messages.add_message(request, messages.INFO, "Checking...")
