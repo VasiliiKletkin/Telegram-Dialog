@@ -65,11 +65,12 @@ class TelegramUser(TimeStampedModel):
     )
 
     app_json = models.JSONField(null=True, blank=True)
-    error = models.TextField(null=True, blank=True)
 
     telegram_groups = models.ManyToManyField(
         TelegramGroup, related_name="telegram_users", null=True, blank=True
     )
+
+    error = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.id} - @{self.username} - {self.first_name}  {self.last_name}"
