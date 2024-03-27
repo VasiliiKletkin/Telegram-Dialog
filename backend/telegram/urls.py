@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import TelegramUserAutocomplete, TelegramGroupAutocomplete
+from .views import TelegramUserAutocomplete, TelegramGroupAutocomplete, TagAutocomplete
 
 urlpatterns = [
     path(
@@ -15,7 +15,7 @@ urlpatterns = [
     ),
     path(
         "tag-autocomplete/",
-        TelegramGroupAutocomplete.as_view(),
+        TagAutocomplete.as_view(),
         name="tag-autocomplete",
     ),
 ]
