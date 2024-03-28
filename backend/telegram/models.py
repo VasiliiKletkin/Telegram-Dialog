@@ -30,7 +30,7 @@ class TelegramGroupMessage(models.Model):
         unique_together = ("telegram_group", "message_id")
 
     def __str__(self):
-        return f"{self.telegram_group} - {self.text[:20]}"
+        return f"@{self.telegram_group.username} - {self.text[:20]}"
 
 
 class TelegramUser(TimeStampedModel):
