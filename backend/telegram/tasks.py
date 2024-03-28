@@ -157,6 +157,9 @@ def get_messages_from_group(group_id):
     )
     for message in messages:
         # FIXME change on bulk update
+        if not message.text or message.text == "":
+            continue
+
         TelegramGroupMessage.objects.get_or_create(
             message_id=message.id,
             telegram_group=telegram_group,
