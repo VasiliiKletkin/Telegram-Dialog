@@ -48,6 +48,9 @@ def check_scene(scene_id):
 def start_scene(scene_id):
     scene = Scene.objects.get(id=scene_id)
 
+    check_scene(scene.id)
+    scene.refresh_from_db()
+
     if not scene.is_ready:
         raise Exception("scene in not ready")
 
@@ -63,7 +66,7 @@ def start_scene(scene_id):
         clocked_schedule = ClockedSchedule.objects.create(clocked_time=target_time)
         PeriodicTask.objects.create(
             clocked=clocked_schedule,
-            name=f"Send message id:{message.id}, user_id:{role.telegram_user.id}, group:@{scene.telegram_group.username}, start_time:{target_time_str}, message:{message.text[:15]}",
+            name=f"Send message id:{message.id}, start_time:{target_time_str}, user_id:{role.telegram_user.id}, group:@{scene.telegram_group.username},  message:{message.text[:15]}",
             one_off=True,
             task="telegram.tasks.send_message_from_scene",
             args=json.dumps(
