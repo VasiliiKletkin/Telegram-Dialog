@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from telethon.errors import PhoneNumberBannedError
 from core.celery import app
 from dialogs.models import Dialog, Message, Scene
 from django.db.models import Count, F
@@ -50,6 +51,7 @@ def check_user(telegram_user_id):
 
         if not proxy_server.is_active:
             raise Exception("Proxy is not active")
+
         elif not proxy_server.is_ready:
             raise Exception("Proxy is not ready")
         elif proxy_server.error:
@@ -61,9 +63,14 @@ def check_user(telegram_user_id):
             api_hash=telegram_user.app.api_hash,
             proxy_dict=telegram_user.proxy_server.get_proxy_dict(),
         )
+
         telegram_user.first_name = me.first_name
         telegram_user.last_name = me.last_name
         telegram_user.username = me.username
+
+    except PhoneNumberBannedError as error:
+        telegram_user.error = str(error)
+        telegram_user.is_active = False
 
     except Exception as error:
         telegram_user.error = str(error)
