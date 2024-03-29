@@ -243,17 +243,20 @@ def generate_dialogs_from_group(group_id):
 
     dialogs = {}
     for msg in messages_with_reply:
+        dialog = {}
+
+        if msg.reply_to_msg:
+            # если текущее сообщение является ответом на другое сообщение
+            continue
 
         context_messages = messages_from_group.filter(
             user_id=msg.user_id,
-            message_id__in=range(msg.message_id - 2, msg.message_id + 2),
+            message_id__in=range(msg.message_id - 2, msg.message_id + 3),
         )
-        if context_messages.filter(
-            reply_to_msg_id__isnull=False
-        ).exists():  # если текущий контекст является ответом на другое сообщение
+        if context_messages.filter(reply_to_msg_id__isnull=False).exists():
+            # если текущий контекст является ответом на другое сообщение
             continue
 
-        dialog = {}
         key = f"{msg.text}"
         dialogs[key] = dialog
 
