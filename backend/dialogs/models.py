@@ -96,4 +96,4 @@ class Role(TimeStampedModel):
         unique_together = ("scene", "telegram_user", "name")
 
     def __str__(self):
-        return f"name of role:{self.name}, username:{self.telegram_user.username}"
+        return f"name of role:{self.name}, username:{self.telegram_user}"

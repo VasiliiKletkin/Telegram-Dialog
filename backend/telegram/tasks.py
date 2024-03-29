@@ -107,7 +107,7 @@ def send_message_from_scene(message_id, scene_id):
                 .filter(
                     user_id=answer_telegram_user.id,
                     telegram_group=scene.telegram_group,
-                    text=answer_message.text,
+                    text=answer_message.text.replace("\r\n", " \n"),
                 )
                 .order_by("date")
                 .last()
