@@ -23,6 +23,13 @@ class MessageInlineAdmin(admin.TabularInline):
     ordering = ["start_time"]
 
 
+class TagFilter(AutocompleteFilter):
+    title = "Tags"
+    field_name = "tags"
+    autocomplete_url = "tag-autocomplete"
+    is_placeholder_title = True
+
+
 class DialogAdmin(admin.ModelAdmin):
     list_display = ("name", "roles_count", "created", "is_active")
     ordering = ["-created"]
@@ -30,6 +37,7 @@ class DialogAdmin(admin.ModelAdmin):
     list_filter = [
         ("is_active", admin.BooleanFieldListFilter),
         ("created", DateTimeRangeFilter),
+        TagFilter,
     ]
     inlines = [MessageInlineAdmin]
     form = DialogAdminForm
