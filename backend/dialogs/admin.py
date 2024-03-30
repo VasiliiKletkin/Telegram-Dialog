@@ -4,7 +4,6 @@ from .tasks import (
     start_scene,
     check_scene,
     create_periodic_task_from_scene,
-    join_to_chat_users_from_scene,
 )
 from .forms import (
     RoleInlineAdminForm,
@@ -89,18 +88,11 @@ class SceneAdmin(admin.ModelAdmin):
     form = SceneAdminForm
 
     def start(self, request, queryset):
-        messages.add_message(request, messages.INFO, "Scenes starting now")
+        messages.add_message(request, messages.INFO, "Scenes starting now ...")
         for obj in queryset:
             start_scene.delay(obj.id)
 
     start.short_description = "Start scene"
-
-    def join_to_chat_users(self, request, queryset):
-        messages.add_message(request, messages.INFO, "Joining to chat users...")
-        for obj in queryset:
-            join_to_chat_users_from_scene.delay(obj.id)
-
-    join_to_chat_users.short_description = "Join to chat users"
 
     def create_tasks(self, request, queryset):
         messages.add_message(request, messages.INFO, "Create tasks from scenes...")
