@@ -10,7 +10,7 @@ from telegram.models import TelegramGroup, TelegramUser
 
 class Dialog(TimeStampedModel):
     is_active = models.BooleanField(default=False)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, db_index=True)
     tags = TaggableManager(blank=True)
 
     def __str__(self):
@@ -25,8 +25,8 @@ class Message(TimeStampedModel):
     dialog = models.ForeignKey(
         Dialog, on_delete=models.CASCADE, related_name="messages"
     )
-    role_name = models.CharField(max_length=255)
-    text = models.TextField()
+    role_name = models.CharField(max_length=255, db_index=True)
+    text = models.TextField(db_index=True)
     start_time = models.TimeField(default=time(0))
     reply_to_msg = models.ForeignKey(
         "Message", on_delete=models.CASCADE, null=True, blank=True
@@ -87,7 +87,7 @@ class Scene(TimeStampedModel):
 
 class Role(TimeStampedModel):
     scene = models.ForeignKey(Scene, on_delete=models.CASCADE, related_name="roles")
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, db_index=True)
     telegram_user = models.ForeignKey(
         TelegramUser, on_delete=models.CASCADE, related_name="roles"
     )
@@ -97,3 +97,11 @@ class Role(TimeStampedModel):
 
     def __str__(self):
         return f"name of role:{self.name}, username:{self.telegram_user}"
+
+    # def clean(self):
+    #     if (
+    #         self.scene.roles.filter(telegram_user=self.telegram_user)
+    #         .exclude(id=self.id)
+    #         .exists()
+    #     ):
+    #         raise ValidationError("Role already exists")

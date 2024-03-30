@@ -8,8 +8,8 @@ from taggit.managers import TaggableManager
 
 class TelegramGroup(TimeStampedModel):
     is_active = models.BooleanField(default=False)
-    name = models.CharField(max_length=255)
-    username = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, db_index=True)
+    username = models.CharField(max_length=255, unique=True, db_index=True)
     tags = TaggableManager(blank=True)
 
     def __str__(self):
@@ -20,11 +20,11 @@ class TelegramGroupMessage(models.Model):
     telegram_group = models.ForeignKey(
         TelegramGroup, on_delete=models.CASCADE, related_name="messages"
     )
-    message_id = models.BigIntegerField()
-    text = models.TextField()
+    message_id = models.BigIntegerField(db_index=True)
+    text = models.TextField(db_index=True)
     date = models.DateTimeField()
-    user_id = models.BigIntegerField(null=True, blank=True)
-    reply_to_msg_id = models.BigIntegerField(null=True, blank=True)
+    user_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    reply_to_msg_id = models.BigIntegerField(null=True, blank=True, db_index=True)
 
     class Meta:
         unique_together = ("telegram_group", "message_id")
@@ -45,9 +45,13 @@ class TelegramUser(TimeStampedModel):
     is_active = models.BooleanField(default=True)
 
     id = models.BigIntegerField(primary_key=True)
-    username = models.CharField(max_length=32, null=True, blank=True)
-    first_name = models.CharField(default="", max_length=64, null=True, blank=True)
-    last_name = models.CharField(default="", max_length=64, null=True, blank=True)
+    username = models.CharField(max_length=32, null=True, blank=True, db_index=True)
+    first_name = models.CharField(
+        default="", max_length=64, null=True, blank=True, db_index=True
+    )
+    last_name = models.CharField(
+        default="", max_length=64, null=True, blank=True, db_index=True
+    )
     sex = models.PositiveIntegerField(choices=SEX_CHOICE, null=True, blank=True)
     # country = models.CharField(max_length=255, null=True, blank=True)
     phone = models.CharField(max_length=30, null=True, blank=True)
@@ -64,11 +68,10 @@ class TelegramUser(TimeStampedModel):
         related_name="telegram_user",
     )
 
-    app_json = models.JSONField(null=True, blank=True)
-
     telegram_groups = models.ManyToManyField(
         TelegramGroup, related_name="telegram_users", null=True, blank=True
     )
+    app_json = models.JSONField(null=True, blank=True)
 
     error = models.TextField(null=True, blank=True)
 
