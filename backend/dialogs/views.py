@@ -1,7 +1,7 @@
 from dal import autocomplete
 from django.db.models import Q
 
-from .models import Message, Dialog
+from .models import Message, Dialog, Scene
 
 
 class MessageRoleNameAutocomplete(autocomplete.Select2ListView):
@@ -24,3 +24,10 @@ class MessageAutocomplete(autocomplete.Select2QuerySetView):
 class DialogAutocomplete(autocomplete.Select2QuerySetView):
     queryset = Dialog.objects.filter(is_active=True)
     search_fields = ["name", "id"]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if telegram_group := self.forwarded.get("telegram_group"):
+            scenes = Scene.objects.filter(telegram_group=telegram_group)
+            qs = qs.exclude(scenes__in=scenes)
+        return qs

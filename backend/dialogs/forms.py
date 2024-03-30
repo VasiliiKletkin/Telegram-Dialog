@@ -35,11 +35,11 @@ class SceneAdminForm(ModelForm):
         model = Scene
         fields = "__all__"
         widgets = {
-            "dialog": autocomplete.ModelSelect2(
-                url="dialog-autocomplete",
-            ),
             "telegram_group": autocomplete.ModelSelect2(
                 url="telegram_group-autocomplete"
+            ),
+            "dialog": autocomplete.ModelSelect2(
+                url="dialog-autocomplete", forward=["telegram_group"]
             ),
         }
 
