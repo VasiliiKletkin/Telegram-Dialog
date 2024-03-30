@@ -5,7 +5,7 @@ from core.celery import app
 from django.utils import timezone
 from django_celery_beat.models import ClockedSchedule, PeriodicTask
 from telegram.models import TelegramUser
-from telegram.tasks import check_user, join_user_to_chat
+from telegram.tasks import check_user, join_user_to_chat, save_dialogs_from_user
 
 from .models import Scene
 
@@ -22,6 +22,7 @@ def check_scene(scene_id):
             raise Exception(
                 "Count of roles of Dialog are not equal count of roles of scene"
             )
+        join_to_chat_users_from_scene(scene.id)
 
         for user in telegram_users:
             check_user(user.id)
@@ -104,9 +105,10 @@ def join_to_chat_users_from_scene(scene_id):
     roles = scene.roles.all()
     telegram_users = TelegramUser.objects.filter(roles__in=roles).distinct()
 
-    for user in telegram_users:
-        if not user.is_member_of_group(scene.telegram_group.username):
-            join_user_to_chat.delay(
-                user.id,
+    for telegram_user in telegram_users:
+        if not telegram_user.is_member_of_group(scene.telegram_group.username):
+            join_user_to_chat(
+                telegram_user.id,
                 scene.telegram_group.username,
             )
+            save_dialogs_from_user(telegram_user.id)

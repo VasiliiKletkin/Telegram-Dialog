@@ -76,7 +76,6 @@ def check_user(telegram_user_id):
         telegram_user.error = str(error)
     else:
         telegram_user.error = None
-        save_dialogs_from_user(telegram_user_id=telegram_user_id)
     finally:
         telegram_user.save()
 
