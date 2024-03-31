@@ -23,7 +23,7 @@ class MessageInlineAdminForm(ModelForm):
         model = Message
         fields = "__all__"
         widgets = {
-            "reply_to_msg": autocomplete.ListSelect2(
+            "reply_to_msg": autocomplete.ModelSelect2(
                 url="reply_to_msg-autocomplete", forward=["dialog"]
             ),
             "text": Textarea(attrs={"rows": 4, "cols": 70}),
