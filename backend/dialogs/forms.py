@@ -10,7 +10,7 @@ from .models import Dialog, Message, Role, Scene
 
 class RoleInlineAdminForm(forms.ModelForm):
     name = autocomplete.Select2ListChoiceField(
-        choice_list=Message.objects.values_list("id", "role_name").distinct(),
+        choice_list=Message.objects.values_list("role_name", "role_name").distinct(),
         widget=autocomplete.ListSelect2(
             url="message_role_name-autocomplete", forward=["dialog"]
         ),
@@ -55,30 +55,30 @@ class SceneAdminForm(forms.ModelForm):
             ),
         }
 
-    def save(self, commit: bool) -> Any:
-        scene = super().save()
-        if scene.roles_count < scene.dialog.roles_count:
-            for _ in range(scene.dialog.roles_count - scene.roles_count):
-                available_users_id = (
-                    TelegramUser.objects.filter(is_active=True)
-                    .exclude(
-                        id__in=scene.roles.values_list("telegram_user_id", flat=True)
-                    )
-                    .values_list("id", flat=True)
-                )
+    # def save(self, commit: bool) -> Any:
+    #     scene = super().save()
+    #     if scene.roles_count < scene.dialog.roles_count:
+    #         for _ in range(scene.dialog.roles_count - scene.roles_count):
+    #             available_users_id = (
+    #                 TelegramUser.objects.filter(is_active=True)
+    #                 .exclude(
+    #                     id__in=scene.roles.values_list("telegram_user_id", flat=True)
+    #                 )
+    #                 .values_list("id", flat=True)
+    #             )
 
-                available_name_roles = (
-                    scene.dialog.messages.exclude(
-                        role_name__in=scene.roles.values_list("name", flat=True)
-                    )
-                    .values_list("role_name", flat=True)
-                    .distinct()
-                )
+    #             available_name_roles = (
+    #                 scene.dialog.messages.exclude(
+    #                     role_name__in=scene.roles.values_list("name", flat=True)
+    #                 )
+    #                 .values_list("role_name", flat=True)
+    #                 .distinct()
+    #             )
 
-                scene.roles.create(
-                    telegram_user_id=random.choice(available_users_id),
-                    name=random.choice(available_name_roles),
-                )
+    #             scene.roles.create(
+    #                 telegram_user_id=random.choice(available_users_id),
+    #                 name=random.choice(available_name_roles),
+    #             )
 
 
 class DialogAdminForm(forms.ModelForm):
