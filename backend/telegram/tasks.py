@@ -227,6 +227,7 @@ def create_messages(dialog_id, messages_dict, reply_to_msg_id=None):
 
 @app.task()
 def generate_dialogs_from_group(group_id):
+    get_messages_from_group(group_id)
     telegram_group = TelegramGroup.objects.get(id=group_id)
     messages_from_group = telegram_group.messages.all()
 
