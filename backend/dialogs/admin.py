@@ -97,7 +97,7 @@ class SceneAdmin(admin.ModelAdmin):
     def create_tasks(self, request, queryset):
         messages.add_message(request, messages.INFO, "Create tasks from scenes...")
         for obj in queryset:
-            create_periodic_task_from_scene.delay(obj.id)
+            create_periodic_task_from_scene(obj.id)
 
     create_tasks.short_description = "Create periodic tasks"
 
