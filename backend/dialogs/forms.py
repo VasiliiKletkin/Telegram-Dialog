@@ -1,4 +1,4 @@
-from dal import autocomplete
+from dal import autocomplete, forward
 from django.forms import ModelForm, Textarea
 
 from .models import Message, Role, Scene, Dialog
@@ -39,7 +39,8 @@ class SceneAdminForm(ModelForm):
                 url="telegram_group-autocomplete"
             ),
             "dialog": autocomplete.ModelSelect2(
-                url="dialog-autocomplete", forward=["telegram_group"]
+                url="dialog-autocomplete",
+                forward=["telegram_group", forward.Const(True, "is_active")],
             ),
         }
 
