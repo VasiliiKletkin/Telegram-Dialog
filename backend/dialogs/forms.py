@@ -10,7 +10,7 @@ from .models import Dialog, Message, Role, Scene
 
 class RoleInlineAdminForm(forms.ModelForm):
     name = autocomplete.Select2ListChoiceField(
-        choice_list=Message.objects.values_list("role_name", flat=True).distinct(),
+        choice_list=Message.objects.values_list("id", "role_name").distinct(),
         widget=autocomplete.ListSelect2(
             url="message_role_name-autocomplete", forward=["dialog"]
         ),
@@ -20,9 +20,9 @@ class RoleInlineAdminForm(forms.ModelForm):
         model = Role
         fields = "__all__"
         widgets = {
-            "name": autocomplete.ListSelect2(
-                url="message_role_name-autocomplete", forward=["dialog"]
-            ),
+            # "name": autocomplete.ListSelect2(
+            #     url="message_role_name-autocomplete", forward=["dialog"]
+            # ),
             "telegram_user": autocomplete.ModelSelect2(
                 url="telegram_user-autocomplete"
             ),

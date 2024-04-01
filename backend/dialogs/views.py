@@ -7,7 +7,7 @@ from .models import Message, Dialog, Scene
 class MessageRoleNameAutocomplete(autocomplete.Select2ListView):
 
     def get_list(self):
-        qs = Message.objects.all()
+        qs = Message.objects.all().values_list("id", "role_name").distinct()
 
         if dialog := self.forwarded.get("dialog", None):
             qs = qs.filter(dialog=dialog)
@@ -15,7 +15,7 @@ class MessageRoleNameAutocomplete(autocomplete.Select2ListView):
             if self.q:
                 qs = qs.filter(Q(role_name__icontains=self.q))
 
-            return qs.values_list("role_name", flat=True).distinct()
+            return qs
         return []
 
 
