@@ -267,7 +267,7 @@ def get_spammer_users(group_id):
 
 @app.task()
 def generate_dialogs_from_group(group_id):
-    # save_messages_from_group(group_id)
+    save_messages_from_group(group_id)
 
     telegram_group = TelegramGroup.objects.get(id=group_id)
     group_messages = telegram_group.messages.all()
