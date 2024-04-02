@@ -20,6 +20,10 @@ class Dialog(TimeStampedModel):
     def roles_count(self):
         return self.messages.values("role_name").distinct().count()
 
+    @property
+    def messages_count(self):
+        return self.messages.count()
+
     def get_roles_list(self):
         return self.messages.objects.values_list("role_name").distinct()
 

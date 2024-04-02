@@ -7,7 +7,12 @@ from django.db.models import Count, F
 from proxies.tasks import check_proxy
 from taggit.models import Tag
 
-from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
+from .models import (
+    TelegramGroup,
+    TelegramGroupDialog,
+    TelegramGroupMessage,
+    TelegramUser,
+)
 from .utils import (
     get_dialogs,
     get_me,
@@ -150,9 +155,9 @@ def join_user_to_chat(telegram_user_id, chat_id):
 
 
 @app.task()
-def get_messages_from_group(group_id):
+def save_messages_from_group(group_id):
     telegram_group = TelegramGroup.objects.get(id=group_id)
-    telegram_user = TelegramUser.objects.filter(is_active=True).first()
+    telegram_user = TelegramUser.get_random()
 
     messages = get_messages(
         client_session=telegram_user.client_session,
@@ -206,76 +211,119 @@ def get_answer_from_message(all_messages_from_group, ask_message):
     return dialogs_dict
 
 
-def create_messages(dialog_id, messages_dict, reply_to_msg_id=None):
-    msgs = []
+def get_dialog_messages_from_dict(dialog, delta, messages_dict, reply_to_msg=None):
+    dialog_messages = []
     if isinstance(messages_dict, dict) and messages_dict == {}:
-        return msgs
-    for message, reply_messages in messages_dict.items():
+        return dialog_messages
+    for message, reply_messages_dict in messages_dict.items():
         msg, created = Message.objects.get_or_create(
-            dialog_id=dialog_id,
+            dialog=dialog,
             text=message.text,
             defaults={
                 "role_name": message.user_id if message.user_id else "Smbd",
-                "start_time": message.date,
-                "reply_to_msg_id": reply_to_msg_id,
+                "start_time": message.date - delta,
+                "reply_to_msg": reply_to_msg,
             },
         )
-        msgs.append(msg.id)
-        msgs.extend(create_messages(dialog_id, reply_messages, reply_to_msg_id=msg.id))
-    return msgs
+        dialog_messages.append(msg.id)
+        dialog_messages.extend(
+            get_dialog_messages_from_dict(
+                dialog,
+                delta,
+                reply_messages_dict,
+                reply_to_msg=msg,
+            )
+        )
+    return dialog_messages
+
+
+@app.task()
+def get_spammer_users(group_id):
+    telegram_group = TelegramGroup.objects.get(id=group_id)
+    group_messages = telegram_group.messages.all()
+
+    user_ids_spammer = []
+
+    user_ids_from_group = (
+        group_messages.filter(user_id__isnull=False)
+        .values_list("user_id", flat=True)
+        .annotate(count=Count("id"))
+        .filter(count__gte=10)
+        .order_by("-count")[:10]
+    )
+
+    for user_id in user_ids_from_group:
+        if (
+            group_messages.filter(user_id=user_id)
+            .values_list("text", flat=True)
+            .annotate(count=Count("id"))
+            .filter(count__gte=10)
+            .exists()
+        ):
+            user_ids_spammer.append(user_id)
+
+    return user_ids_spammer
 
 
 @app.task()
 def generate_dialogs_from_group(group_id):
-    get_messages_from_group(group_id)
-    telegram_group = TelegramGroup.objects.get(id=group_id)
-    messages_from_group = telegram_group.messages.all()
+    # save_messages_from_group(group_id)
 
-    answers_messages_ids = list(
-        messages_from_group.values_list("reply_to_msg_id", flat=True)
+    telegram_group = TelegramGroup.objects.get(id=group_id)
+    group_messages = telegram_group.messages.all()
+
+    if spammer_user_ids := get_spammer_users(group_id):  # фильтруем от спамеров
+        group_messages = group_messages.exclude(user_id__in=spammer_user_ids)
+
+    answers_messages_ids = list(  # получаем все id ответов
+        group_messages.values_list("reply_to_msg_id", flat=True)
         .annotate(count=Count("id"))
         .filter(count__gte=1)
     )
 
-    messages_with_reply = messages_from_group.filter(
+    group_messages_with_reply = group_messages.filter(  # получаем сообщения с ответами но при это чтобы они сами не были ответами
         message_id__in=answers_messages_ids, reply_to_msg_id__isnull=True
     )
 
-    dialogs = {}
-    for msg in messages_with_reply:
-        dialog = {}
-
-        if msg.reply_to_msg:
-            # если текущее сообщение является ответом на другое сообщение
-            continue
-
-        context_messages = messages_from_group.filter(
+    for msg in group_messages_with_reply:
+        context_messages = group_messages.filter(
             user_id=msg.user_id,
             message_id__in=range(msg.message_id - 2, msg.message_id + 3),
         )
-        if context_messages.filter(reply_to_msg_id__isnull=False).exists():
-            # если текущий контекст является ответом на другое сообщение
+
+        if msg.reply_to_msg_id:  # если сообщение является ответом на другое сообщение
+            continue
+        elif context_messages.filter(
+            reply_to_msg_id__isnull=False
+        ).exists():  # если контекст является ответом на другое сообщение
             continue
 
-        key = f"{msg.text}"
-        dialogs[key] = dialog
-
-        for m in context_messages:
-            dialog[m] = get_answer_from_message(messages_from_group, m)
-
-        dialog, created = Dialog.objects.get_or_create(name=key[:255])
+        dialog, created = Dialog.objects.get_or_create(name=msg.text[:255])
+        TelegramGroupDialog.objects.get_or_create(
+            group=telegram_group, dialog=dialog, date=msg.date
+        )
 
         if created:
             dialog.tags.add(*telegram_group.tags.all())
-            tags = [Tag(name=tag, slug=tag) for tag in get_tags_from_str(msg.text)]
-            dialog.tags.bulk_create(tags, ignore_conflicts=True)
+            tags = []
+            for tag_name in get_tags_from_str(msg.text):
+                tag, created = Tag.objects.get_or_create(
+                    name=tag_name,
+                    defaults={
+                        "slug": tag_name,
+                    },
+                )
+                tags.append(tag)
+            dialog.tags.add(*tags)
 
-        msg_ids = create_messages(dialog.id, dialogs[key])
-        Message.objects.filter(id__in=msg_ids).update(
-            start_time=F("start_time")
-            - timedelta(
-                seconds=msg.date.second,
-                minutes=msg.date.minute,
-                hours=msg.date.hour,
-            )
+        delta = timedelta(
+            seconds=msg.date.second,
+            minutes=msg.date.minute,
+            hours=msg.date.hour,
         )
+
+        dialog_dict = {}
+        for m in context_messages:
+            dialog_dict[m] = get_answer_from_message(group_messages, m)
+
+        dialog_messages_ids = get_dialog_messages_from_dict(dialog, delta, dialog_dict)

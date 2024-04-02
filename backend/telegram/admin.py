@@ -3,11 +3,16 @@ from rangefilter.filters import DateTimeRangeFilter
 
 from .forms import TelegramGroupAdminForm, TelegramUserAdminForm
 from dal_admin_filters import AutocompleteFilter
-from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
+from .models import (
+    TelegramGroup,
+    TelegramGroupMessage,
+    TelegramUser,
+    TelegramGroupDialog,
+)
 from .tasks import (
     check_user,
     generate_dialogs_from_group,
-    get_messages_from_group,
+    save_messages_from_group,
     save_dialogs_from_user,
 )
 
@@ -16,18 +21,19 @@ class TelegramGroupAdmin(admin.ModelAdmin):
     form = TelegramGroupAdminForm
     actions = ["get_messages", "generate_dialogs"]
     list_display = ("name", "username", "created", "is_active")
+    list_filter = ["is_active"]
 
-    def get_messages(self, request, queryset):
+    def save_messages(self, request, queryset):
         messages.add_message(request, messages.INFO, "Parse messages from group...")
         for obj in queryset:
-            get_messages_from_group.delay(obj.id)
+            save_messages_from_group.delay(obj.id)
 
-    get_messages.short_description = "Parse messages"
+    save_messages.short_description = "Parse messages"
 
     def generate_dialogs(self, request, queryset):
         messages.add_message(request, messages.INFO, "Generate dialogs from group...")
         for obj in queryset:
-            generate_dialogs_from_group.delay(obj.id)
+            generate_dialogs_from_group(obj.id)
 
     generate_dialogs.short_description = "Generate dialogs"
 
@@ -80,6 +86,14 @@ class TelegramGroupMessageAdmin(admin.ModelAdmin):
     ]
 
 
+class TelegramGroupDialogAdmin(admin.ModelAdmin):
+    list_display = ("dialog", "group", "date")
+    list_filter = [
+        ("date", DateTimeRangeFilter),
+    ]
+
+
+admin.site.register(TelegramGroupDialog, TelegramGroupDialogAdmin)
 admin.site.register(TelegramGroupMessage, TelegramGroupMessageAdmin)
 admin.site.register(TelegramUser, TelegramUserAdmin)
 admin.site.register(TelegramGroup, TelegramGroupAdmin)
