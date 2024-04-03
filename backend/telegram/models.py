@@ -97,8 +97,10 @@ class TelegramUser(TimeStampedModel):
         return self.telegram_groups.filter(username=username).exists()
 
     @classmethod
-    def get_random(cls, exclude_ids=None):
+    def get_random(cls, include_ids=None, exclude_ids=None):
         qs = cls.objects.filter(is_active=True)
+        if include_ids:
+            qs = qs.filter(id__in=include_ids)
         if exclude_ids:
             qs = qs.exclude(id__in=exclude_ids)
         ids = qs.values_list("id", flat=True)

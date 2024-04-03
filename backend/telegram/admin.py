@@ -32,7 +32,7 @@ class TelegramGroupAdmin(admin.ModelAdmin):
     def generate_dialogs(self, request, queryset):
         messages.add_message(request, messages.INFO, "Generate dialogs from group...")
         for obj in queryset:
-            generate_dialogs_from_group(obj.id)
+            generate_dialogs_from_group.delay(obj.id)
 
     generate_dialogs.short_description = "Generate dialogs"
 

@@ -8,8 +8,14 @@ from taggit.models import Tag
 from telethon.errors import PhoneNumberBannedError
 
 from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
-from .utils import (get_dialogs, get_me, get_messages, get_tags_from_str,
-                    join_to_chat, send_message)
+from .utils import (
+    get_dialogs,
+    get_me,
+    get_messages,
+    get_tags_from_str,
+    join_to_chat,
+    send_message,
+)
 
 
 @app.task()
@@ -146,7 +152,8 @@ def join_user_to_chat(telegram_user_id, chat_id):
 @app.task()
 def save_messages_from_group(group_id):
     telegram_group = TelegramGroup.objects.get(id=group_id)
-    telegram_user = TelegramUser.get_random()
+    ids = telegram_group.telegram_users.values_list("id", flat=True)
+    telegram_user = TelegramUser.get_random(include_ids=ids)
 
     messages = get_messages(
         client_session=telegram_user.client_session,
