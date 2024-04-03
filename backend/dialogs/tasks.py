@@ -6,7 +6,7 @@ from django.utils import timezone
 from django_celery_beat.models import ClockedSchedule, PeriodicTask
 from telegram.models import TelegramUser
 from telegram.tasks import check_user, join_user_to_chat, save_dialogs_from_user
-
+import random
 from .models import Scene, TelegramGroupDialog
 
 
@@ -122,7 +122,7 @@ def generate_scenes_from_dialog(telegram_dialog_id):
         return
 
     for telegram_group in telegram_dialog.telegram_group.similar_groups.all():
-        start_date = telegram_dialog.date + timedelta(days=7)
+        start_date = telegram_dialog.date + timedelta(days=random.randint(2, 7), minutes=random.randint(0, 5), seconds=random.randint(0, 59))
         scene, created = Scene.objects.get_or_create(
             telegram_group=telegram_group,
             dialog=telegram_dialog.dialog,
