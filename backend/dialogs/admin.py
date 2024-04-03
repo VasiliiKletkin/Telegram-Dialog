@@ -1,9 +1,10 @@
 from django.contrib import admin, messages
-from .models import Dialog, Message, Scene, Role
+from .models import Dialog, Message, Scene, Role, TelegramGroupDialog
 from .tasks import (
     start_scene,
     check_scene,
     create_periodic_task_from_scene,
+    generate_scenes_from_dialog
 )
 from .forms import (
     RoleInlineAdminForm,
@@ -109,5 +110,21 @@ class SceneAdmin(admin.ModelAdmin):
     check_obj.short_description = "Check scene"
 
 
+class TelegramGroupDialogAdmin(admin.ModelAdmin):
+    list_display = ("dialog", "telegram_group", "date")
+    list_filter = [
+        ("date", DateTimeRangeFilter),
+    ]
+    actions = ["generate_scenes"]
+
+    def generate_scenes(self, request, queryset):
+        messages.add_message(request, messages.INFO, "Generate scenes ...")
+        for obj in queryset:
+            generate_scenes_from_dialog(obj.id)
+
+    generate_scenes.short_description = "Generate scenes ..."
+
+
+admin.site.register(TelegramGroupDialog, TelegramGroupDialogAdmin)
 admin.site.register(Scene, SceneAdmin)
 admin.site.register(Dialog, DialogAdmin)

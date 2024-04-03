@@ -112,3 +112,12 @@ class Role(TimeStampedModel):
     #         .exists()
     #     ):
     #         raise ValidationError("Role already exists")
+
+
+class TelegramGroupDialog(TimeStampedModel):
+    telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
+    dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE)
+    date = models.DateTimeField()
+
+    class Meta:
+        unique_together = ("telegram_group", "dialog")

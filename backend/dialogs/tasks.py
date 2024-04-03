@@ -7,7 +7,7 @@ from django_celery_beat.models import ClockedSchedule, PeriodicTask
 from telegram.models import TelegramUser
 from telegram.tasks import check_user, join_user_to_chat, save_dialogs_from_user
 
-from .models import Scene
+from .models import Scene, TelegramGroupDialog
 
 
 @app.task()
@@ -113,3 +113,18 @@ def join_to_chat_users_from_scene(scene_id):
                 scene.telegram_group.username,
             )
             save_dialogs_from_user(telegram_user.id)
+
+
+@app.task()
+def generate_scenes_from_dialog(telegram_dialog_id):
+    telegram_dialog = TelegramGroupDialog.objects.get(id=telegram_dialog_id)
+    if not telegram_dialog.dialog.is_active:
+        return
+
+    for telegram_group in telegram_dialog.telegram_group.similar_groups.all():
+        start_date = telegram_dialog.date + timedelta(days=1)
+        scene, created = Scene.objects.get_or_create(
+            telegram_group=telegram_group,
+            dialog=telegram_dialog.dialog,
+            defaults={"start_date": start_date},
+        )

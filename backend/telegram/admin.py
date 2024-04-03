@@ -7,7 +7,6 @@ from .models import (
     TelegramGroup,
     TelegramGroupMessage,
     TelegramUser,
-    TelegramGroupDialog,
 )
 from .tasks import (
     check_user,
@@ -86,14 +85,6 @@ class TelegramGroupMessageAdmin(admin.ModelAdmin):
     ]
 
 
-class TelegramGroupDialogAdmin(admin.ModelAdmin):
-    list_display = ("dialog", "group", "date")
-    list_filter = [
-        ("date", DateTimeRangeFilter),
-    ]
-
-
-admin.site.register(TelegramGroupDialog, TelegramGroupDialogAdmin)
 admin.site.register(TelegramGroupMessage, TelegramGroupMessageAdmin)
 admin.site.register(TelegramUser, TelegramUserAdmin)
 admin.site.register(TelegramGroup, TelegramGroupAdmin)

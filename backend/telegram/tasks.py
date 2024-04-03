@@ -1,26 +1,15 @@
 from datetime import timedelta
 
-from telethon.errors import PhoneNumberBannedError
 from core.celery import app
-from dialogs.models import Dialog, Message, Scene
+from dialogs.models import Dialog, Message, Scene, TelegramGroupDialog
 from django.db.models import Count, F
 from proxies.tasks import check_proxy
 from taggit.models import Tag
+from telethon.errors import PhoneNumberBannedError
 
-from .models import (
-    TelegramGroup,
-    TelegramGroupDialog,
-    TelegramGroupMessage,
-    TelegramUser,
-)
-from .utils import (
-    get_dialogs,
-    get_me,
-    get_messages,
-    get_tags_from_str,
-    join_to_chat,
-    send_message,
-)
+from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
+from .utils import (get_dialogs, get_me, get_messages, get_tags_from_str,
+                    join_to_chat, send_message)
 
 
 @app.task()
@@ -191,6 +180,33 @@ def save_messages_from_group(group_id):
         )
 
 
+@app.task()
+def get_spammer_users(group_id):
+    telegram_group = TelegramGroup.objects.get(id=group_id)
+    group_messages = telegram_group.messages.all()
+
+    user_ids_spammer = []
+
+    user_ids_from_group = (
+        group_messages.filter(user_id__isnull=False)
+        .values_list("user_id", flat=True)
+        .annotate(count=Count("id"))
+        .filter(count__gte=10)
+        .order_by("-count")[:10]
+    )
+
+    for user_id in user_ids_from_group:
+        if (
+            group_messages.filter(user_id=user_id)
+            .values_list("text", flat=True)
+            .annotate(count=Count("id"))
+            .filter(count__gte=10)
+            .exists()
+        ):
+            user_ids_spammer.append(user_id)
+    return user_ids_spammer
+
+
 def get_answer_from_message(all_messages_from_group, ask_message):
     answer_messages = all_messages_from_group.filter(
         reply_to_msg_id=ask_message.message_id
@@ -238,36 +254,8 @@ def get_dialog_messages_from_dict(dialog, delta, messages_dict, reply_to_msg=Non
 
 
 @app.task()
-def get_spammer_users(group_id):
-    telegram_group = TelegramGroup.objects.get(id=group_id)
-    group_messages = telegram_group.messages.all()
-
-    user_ids_spammer = []
-
-    user_ids_from_group = (
-        group_messages.filter(user_id__isnull=False)
-        .values_list("user_id", flat=True)
-        .annotate(count=Count("id"))
-        .filter(count__gte=10)
-        .order_by("-count")[:10]
-    )
-
-    for user_id in user_ids_from_group:
-        if (
-            group_messages.filter(user_id=user_id)
-            .values_list("text", flat=True)
-            .annotate(count=Count("id"))
-            .filter(count__gte=10)
-            .exists()
-        ):
-            user_ids_spammer.append(user_id)
-
-    return user_ids_spammer
-
-
-@app.task()
 def generate_dialogs_from_group(group_id):
-    save_messages_from_group(group_id)
+    # save_messages_from_group(group_id)
 
     telegram_group = TelegramGroup.objects.get(id=group_id)
     group_messages = telegram_group.messages.all()
@@ -300,7 +288,9 @@ def generate_dialogs_from_group(group_id):
 
         dialog, created = Dialog.objects.get_or_create(name=msg.text[:255])
         TelegramGroupDialog.objects.get_or_create(
-            group=telegram_group, dialog=dialog, date=msg.date
+            telegram_group=telegram_group,
+            dialog=dialog,
+            date=msg.date,
         )
 
         if created:

@@ -103,9 +103,3 @@ class TelegramUser(TimeStampedModel):
             qs = qs.exclude(id__in=exclude_ids)
         ids = qs.values_list("id", flat=True)
         return cls.objects.get(id=random.choice(ids))
-
-
-class TelegramGroupDialog(TimeStampedModel):
-    group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
-    dialog = models.ForeignKey(TelegramGroupMessage, on_delete=models.CASCADE)
-    date = models.DateTimeField()
