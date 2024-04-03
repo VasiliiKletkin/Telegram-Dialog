@@ -294,10 +294,11 @@ def generate_dialogs_from_group(group_id):
             continue
 
         dialog, created = Dialog.objects.get_or_create(name=msg.text[:255])
-        TelegramGroupDialog.objects.get_or_create(
+        dialog.telegram_dialogs.get_or_create(
             telegram_group=telegram_group,
-            dialog=dialog,
-            date=msg.date,
+            defaults={
+                "date": msg.date,
+            },
         )
 
         if created:

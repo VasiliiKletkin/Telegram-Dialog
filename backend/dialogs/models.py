@@ -116,7 +116,7 @@ class Role(TimeStampedModel):
 
 class TelegramGroupDialog(TimeStampedModel):
     telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
-    dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE)
+    dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name="telegram_dialogs")
     date = models.DateTimeField()
 
     class Meta:
