@@ -32,7 +32,7 @@ class Message(TimeStampedModel):
     dialog = models.ForeignKey(
         Dialog, on_delete=models.CASCADE, related_name="messages"
     )
-    role_name = models.CharField(max_length=255, db_index=True)
+    role_name = models.CharField(max_length=255, db_index=True, default="Smbd")
     text = models.TextField(db_index=True)
     start_time = models.TimeField(default=time(0))
     reply_to_msg = models.ForeignKey(
