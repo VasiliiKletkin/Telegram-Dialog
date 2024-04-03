@@ -122,7 +122,7 @@ def generate_scenes_from_dialog(telegram_dialog_id):
         return
 
     for telegram_group in telegram_dialog.telegram_group.similar_groups.all():
-        start_date = telegram_dialog.date + timedelta(days=1)
+        start_date = telegram_dialog.date + timedelta(days=7)
         scene, created = Scene.objects.get_or_create(
             telegram_group=telegram_group,
             dialog=telegram_dialog.dialog,
