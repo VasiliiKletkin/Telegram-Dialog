@@ -121,8 +121,14 @@ def generate_scenes_from_dialog(telegram_dialog_id):
     if not telegram_dialog.dialog.is_active:
         return
 
-    for telegram_group in telegram_dialog.telegram_group.similar_groups.all():
-        start_date = telegram_dialog.date + timedelta(days=random.randint(2, 7), minutes=random.randint(0, 5), seconds=random.randint(0, 59))
+    for telegram_group in telegram_dialog.telegram_group.similar_groups.filter(
+        is_active=True
+    ):
+        start_date = telegram_dialog.date + timedelta(
+            days=random.randint(2, 7),
+            minutes=random.randint(0, 5),
+            seconds=random.randint(0, 59),
+        )
         scene, created = Scene.objects.get_or_create(
             telegram_group=telegram_group,
             dialog=telegram_dialog.dialog,
