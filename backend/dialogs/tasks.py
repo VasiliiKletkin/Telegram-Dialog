@@ -94,6 +94,7 @@ def create_periodic_task_from_scene(scene_id):
         defaults={
             "clocked": clocked_schedule,
             "enabled": scene.is_active,
+            "one_off": True,
             "task": "dialogs.tasks.start_scene",
             "args": json.dumps([scene.id]),
         },
