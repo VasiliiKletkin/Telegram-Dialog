@@ -126,8 +126,7 @@ def generate_scenes_from_dialog(telegram_dialog_id):
     for telegram_group in telegram_dialog.telegram_group.similar_groups.filter(
         is_active=True
     ):
-        start_date = telegram_dialog.date.replace(day=timezone.now().day)
-        start_date += timedelta(
+        start_date = telegram_dialog.date.replace(day=timezone.now().day) + timedelta(
             days=random.randint(0, 7),
             minutes=random.randint(0, 30),
             seconds=random.randint(0, 60),
