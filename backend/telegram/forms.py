@@ -10,6 +10,7 @@ class TelegramGroupAdminForm(ModelForm):
         fields = "__all__"
         widgets = {
             "tags": autocomplete.TaggitSelect2(url="tag-autocomplete"),
+            "similar_groups": autocomplete.ModelSelect2Multiple(url="telegram_group-autocomplete"),
         }
 
 
