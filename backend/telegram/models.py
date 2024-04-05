@@ -15,6 +15,7 @@ class TelegramGroup(TimeStampedModel):
 
     similar_groups = models.ManyToManyField(
         "self",
+        symmetrical=False,
         null=True,
         blank=True,
     )
