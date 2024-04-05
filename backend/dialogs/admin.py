@@ -31,7 +31,7 @@ class TagFilter(AutocompleteFilter):
 
 
 class DialogAdmin(admin.ModelAdmin):
-    list_display = ("name", "roles_count", "created", "is_active")
+    list_display = ("name", "roles_count", "messages_count", "created", "is_active")
     ordering = ["-created"]
     search_fields = ["name", "id"]
     list_filter = [
