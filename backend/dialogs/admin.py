@@ -1,24 +1,12 @@
-from collections.abc import Sequence
-from typing import Any
 from dal_admin_filters import AutocompleteFilter
 from django.contrib import admin, messages
-from django.db.models.query import QuerySet
-from django.http import HttpRequest
 from rangefilter.filters import DateTimeRangeFilter
 
-from .forms import (
-    DialogAdminForm,
-    MessageInlineAdminForm,
-    RoleInlineAdminForm,
-    SceneAdminForm,
-)
+from .forms import (DialogAdminForm, MessageInlineAdminForm,
+                    RoleInlineAdminForm, SceneAdminForm)
 from .models import Dialog, Message, Role, Scene, TelegramGroupDialog
-from .tasks import (
-    check_scene,
-    create_periodic_task_from_scene,
-    generate_scenes_from_dialog,
-    start_scene,
-)
+from .tasks import (check_scene, create_periodic_task_from_scene,
+                    generate_scenes_from_dialog, start_scene)
 
 
 class DialogFilterAdmin(AutocompleteFilter):

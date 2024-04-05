@@ -1,26 +1,34 @@
+from typing import Any
+
+from dal_admin_filters import AutocompleteFilter
 from django.contrib import admin, messages
 from rangefilter.filters import DateTimeRangeFilter
 
 from .forms import TelegramGroupAdminForm, TelegramUserAdminForm
-from dal_admin_filters import AutocompleteFilter
-from .models import (
-    TelegramGroup,
-    TelegramGroupMessage,
-    TelegramUser,
-)
+from .models import TelegramGroup, TelegramGroupMessage, TelegramUser
 from .tasks import (
     check_user,
     generate_dialogs_from_group,
-    save_messages_from_group,
     save_dialogs_from_user,
+    save_messages_from_group,
 )
+
+
+class TagFilter(AutocompleteFilter):
+    title = "Tags"
+    field_name = "tags"
+    autocomplete_url = "tag-autocomplete"
+    is_placeholder_title = True
 
 
 class TelegramGroupAdmin(admin.ModelAdmin):
     form = TelegramGroupAdminForm
     actions = ["get_messages", "generate_dialogs"]
     list_display = ("name", "username", "created", "is_active")
-    list_filter = ["is_active"]
+    list_filter = [
+        "is_active",
+        TagFilter,
+    ]
     ordering = ["is_active"]
 
     def save_messages(self, request, queryset):
@@ -48,8 +56,6 @@ class TelegramUserAdmin(admin.ModelAdmin):
     actions = ["check_obj", "save_all_dialogs"]
     list_filter = [
         ("is_active", admin.BooleanFieldListFilter),
-        # ("proxy_server", admin.FieldListFilter),
-        # TelegramGroupFilterAdmin,
         "sex",
         ("created", DateTimeRangeFilter),
     ]
