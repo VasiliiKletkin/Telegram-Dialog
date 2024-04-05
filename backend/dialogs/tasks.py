@@ -1,5 +1,6 @@
 import json
 from datetime import timedelta
+from django.utils import timezone
 
 from core.celery import app
 from django.utils import timezone
@@ -125,11 +126,14 @@ def generate_scenes_from_dialog(telegram_dialog_id):
     for telegram_group in telegram_dialog.telegram_group.similar_groups.filter(
         is_active=True
     ):
-        start_date = telegram_dialog.date + timedelta(
-            days=random.randint(2, 7),
-            minutes=random.randint(0, 5),
-            seconds=random.randint(0, 59),
+        start_date = telegram_dialog.date
+        start_date.day = timezone.now().day
+        start_date += timedelta(
+            days=random.randint(0, 7),
+            minutes=random.randint(0, 30),
+            seconds=random.randint(0, 60),
         )
+
         scene, created = Scene.objects.get_or_create(
             telegram_group=telegram_group,
             dialog=telegram_dialog.dialog,
