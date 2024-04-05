@@ -1,19 +1,42 @@
+from collections.abc import Sequence
+from typing import Any
+from dal_admin_filters import AutocompleteFilter
 from django.contrib import admin, messages
-from .models import Dialog, Message, Scene, Role, TelegramGroupDialog
+from django.db.models.query import QuerySet
+from django.http import HttpRequest
+from rangefilter.filters import DateTimeRangeFilter
+
+from .forms import (
+    DialogAdminForm,
+    MessageInlineAdminForm,
+    RoleInlineAdminForm,
+    SceneAdminForm,
+)
+from .models import Dialog, Message, Role, Scene, TelegramGroupDialog
 from .tasks import (
-    start_scene,
     check_scene,
     create_periodic_task_from_scene,
-    generate_scenes_from_dialog
+    generate_scenes_from_dialog,
+    start_scene,
 )
-from .forms import (
-    RoleInlineAdminForm,
-    MessageInlineAdminForm,
-    SceneAdminForm,
-    DialogAdminForm,
-)
-from dal_admin_filters import AutocompleteFilter
-from rangefilter.filters import DateTimeRangeFilter
+
+
+class DialogFilterAdmin(AutocompleteFilter):
+    title = "Dialog"
+    field_name = "dialog"
+    autocomplete_url = "dialog-autocomplete"
+
+
+class TelegramGroupFilterAdmin(AutocompleteFilter):
+    title = "Telegram Group"
+    field_name = "telegram_group"
+    autocomplete_url = "telegram_group-autocomplete"
+
+
+# class TelegramUserFilterAdmin(AutocompleteFilter):
+#     title = "Telegram User"
+#     field_name = "telegram_user"
+#     autocomplete_url = "telegram_user-autocomplete"
 
 
 class MessageInlineAdmin(admin.TabularInline):
@@ -47,24 +70,6 @@ class RoleInlineAdmin(admin.TabularInline):
     form = RoleInlineAdminForm
     model = Role
     extra = 1
-
-
-class DialogFilterAdmin(AutocompleteFilter):
-    title = "Dialog"
-    field_name = "dialog"
-    autocomplete_url = "dialog-autocomplete"
-
-
-class TelegramGroupFilterAdmin(AutocompleteFilter):
-    title = "Telegram Group"
-    field_name = "telegram_group"
-    autocomplete_url = "telegram_group-autocomplete"
-
-
-# class TelegramUserFilterAdmin(AutocompleteFilter):
-#     title = "Telegram User"
-#     field_name = "telegram_user"
-#     autocomplete_url = "telegram_user-autocomplete"
 
 
 class SceneAdmin(admin.ModelAdmin):
@@ -111,11 +116,19 @@ class SceneAdmin(admin.ModelAdmin):
 
 
 class TelegramGroupDialogAdmin(admin.ModelAdmin):
-    list_display = ("dialog", "telegram_group", "date")
+    list_display = (
+        "dialog",
+        "telegram_group",
+        "date",
+    )
     list_filter = [
         ("date", DateTimeRangeFilter),
     ]
     actions = ["generate_scenes"]
+    list_filter = [
+        TelegramGroupFilterAdmin,
+        "dialog__is_active",
+    ]
 
     def generate_scenes(self, request, queryset):
         messages.add_message(request, messages.INFO, "Generate scenes ...")
