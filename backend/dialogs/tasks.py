@@ -127,7 +127,7 @@ def generate_scenes_from_dialog(telegram_dialog_id):
         is_active=True
     ):
         start_date = telegram_dialog.date
-        start_date.day = timezone.now().day
+        start_date = start_date.replace(day=timezone.now().day)
         start_date += timedelta(
             days=random.randint(0, 7),
             minutes=random.randint(0, 30),
