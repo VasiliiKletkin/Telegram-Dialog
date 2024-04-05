@@ -21,6 +21,7 @@ class TelegramGroupAdmin(admin.ModelAdmin):
     actions = ["get_messages", "generate_dialogs"]
     list_display = ("name", "username", "created", "is_active")
     list_filter = ["is_active"]
+    ordering = ["is_active"]
 
     def save_messages(self, request, queryset):
         messages.add_message(request, messages.INFO, "Parse messages from group...")
