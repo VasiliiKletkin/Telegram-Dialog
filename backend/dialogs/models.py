@@ -12,6 +12,8 @@ class Dialog(TimeStampedModel):
     is_active = models.BooleanField(default=False)
     name = models.CharField(max_length=255, db_index=True)
     tags = TaggableManager(blank=True)
+    telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE, null=True, blank=True)
+    date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.name[:50]} {self.roles_count} roles"
@@ -114,10 +116,10 @@ class Role(TimeStampedModel):
     #         raise ValidationError("Role already exists")
 
 
-class TelegramGroupDialog(TimeStampedModel):
-    telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
-    dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name="telegram_dialogs")
-    date = models.DateTimeField()
+# class TelegramGroupDialog(TimeStampedModel):
+#     telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
+#     date = models.DateTimeField()
+#     dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name="telegram_dialogs")
 
-    class Meta:
-        unique_together = ("telegram_group", "dialog")
+#     class Meta:
+#         unique_together = ("telegram_group", "dialog")

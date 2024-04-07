@@ -5,10 +5,10 @@ from django.utils import timezone
 from core.celery import app
 from django.utils import timezone
 from django_celery_beat.models import ClockedSchedule, PeriodicTask
-from telegram.models import TelegramUser
+from telegram.models import TelegramGroup, TelegramUser
 from telegram.tasks import check_user, join_user_to_chat, save_dialogs_from_user
 import random
-from .models import Scene, TelegramGroupDialog, TelegramGroup
+from .models import Scene, Dialog
 
 
 @app.task()
@@ -118,15 +118,19 @@ def join_to_chat_users_from_scene(scene_id):
 
 
 @app.task()
-def generate_scenes_from_dialog(telegram_dialog_id):
-    telegram_dialog = TelegramGroupDialog.objects.get(id=telegram_dialog_id)
-    if not telegram_dialog.dialog.is_active:
+def generate_scenes_from_dialog(dialog_id):
+    dialog = Dialog.objects.get(id=dialog_id)
+    if not dialog.is_active:
         return
+
+    if not dialog.telegram_group:
+        return
+
     telegram_groups = TelegramGroup.objects.filter(
-        is_active=True, similar_groups__in=[telegram_dialog.telegram_group]
+        is_active=True, similar_groups__in=[dialog.telegram_group]
         )
     for telegram_group in telegram_groups:
-        start_date = telegram_dialog.date.replace(day=timezone.now().day) + timedelta(
+        start_date = dialog.date.replace(day=timezone.now().day) + timedelta(
             days=random.randint(0, 7),
             minutes=random.randint(0, 30),
             seconds=random.randint(0, 60),
@@ -134,6 +138,6 @@ def generate_scenes_from_dialog(telegram_dialog_id):
 
         scene, created = Scene.objects.get_or_create(
             telegram_group=telegram_group,
-            dialog=telegram_dialog.dialog,
+            dialog=dialog,
             defaults={"start_date": start_date},
         )

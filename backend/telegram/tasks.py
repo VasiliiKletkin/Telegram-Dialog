@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from core.celery import app
-from dialogs.models import Dialog, Message, Scene, TelegramGroupDialog
+from dialogs.models import Dialog, Message, Scene
 from django.db.models import Count, F
 from proxies.tasks import check_proxy
 from taggit.models import Tag
@@ -293,13 +293,12 @@ def generate_dialogs_from_group(group_id):
         ).exists():  # если контекст является ответом на другое сообщение
             continue
 
-        dialog, created = Dialog.objects.get_or_create(name=msg.text[:255])
-        dialog.telegram_dialogs.get_or_create(
-            telegram_group=telegram_group,
+        dialog, created = Dialog.objects.get_or_create(
+            name=msg.text[:255],
             defaults={
-                "date": msg.date,
-            },
-        )
+                "telegram_group": telegram_group,
+                "date": msg.date
+            })
 
         if created:
             dialog.tags.add(*telegram_group.tags.all())

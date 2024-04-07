@@ -4,7 +4,7 @@ from rangefilter.filters import DateTimeRangeFilter
 
 from .forms import (DialogAdminForm, MessageInlineAdminForm,
                     RoleInlineAdminForm, SceneAdminForm)
-from .models import Dialog, Message, Role, Scene, TelegramGroupDialog
+from .models import Dialog, Message, Role, Scene
 from .tasks import (check_scene, create_periodic_task_from_scene,
                     generate_scenes_from_dialog, start_scene)
 
@@ -52,6 +52,14 @@ class DialogAdmin(admin.ModelAdmin):
     ]
     inlines = [MessageInlineAdmin]
     form = DialogAdminForm
+    actions = ["generate_scenes",]
+
+    def generate_scenes(self, request, queryset):
+        messages.add_message(request, messages.INFO, "Generate scenes ...")
+        for obj in queryset:
+            generate_scenes_from_dialog(obj.id)
+
+    generate_scenes.short_description = "Generate scenes"
 
 
 class RoleInlineAdmin(admin.TabularInline):
@@ -103,29 +111,5 @@ class SceneAdmin(admin.ModelAdmin):
     check_obj.short_description = "Check scene"
 
 
-class TelegramGroupDialogAdmin(admin.ModelAdmin):
-    list_display = (
-        "dialog",
-        "telegram_group",
-        "date",
-    )
-    list_filter = [
-        ("date", DateTimeRangeFilter),
-    ]
-    actions = ["generate_scenes"]
-    list_filter = [
-        TelegramGroupFilterAdmin,
-        "dialog__is_active",
-    ]
-
-    def generate_scenes(self, request, queryset):
-        messages.add_message(request, messages.INFO, "Generate scenes ...")
-        for obj in queryset:
-            generate_scenes_from_dialog(obj.id)
-
-    generate_scenes.short_description = "Generate scenes ..."
-
-
-admin.site.register(TelegramGroupDialog, TelegramGroupDialogAdmin)
 admin.site.register(Scene, SceneAdmin)
 admin.site.register(Dialog, DialogAdmin)
