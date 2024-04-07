@@ -30,7 +30,9 @@ class DialogAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if is_active := self.forwarded.get("is_active"):
+        is_active = self.forwarded.get("is_active")
+
+        if is_active is not None:
             qs = qs.filter(is_active=is_active)
 
         if telegram_group := self.forwarded.get("telegram_group"):
