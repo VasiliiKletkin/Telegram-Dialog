@@ -123,7 +123,7 @@ def generate_scenes_from_dialog(telegram_dialog_id):
     if not telegram_dialog.dialog.is_active:
         return
     telegram_groups = TelegramGroup.objects.filter(
-        is_active=True, similar_groups=telegram_dialog.telegram_group
+        is_active=True, similar_groups__in=[telegram_dialog.telegram_group]
         )
     for telegram_group in telegram_groups:
         start_date = telegram_dialog.date.replace(day=timezone.now().day) + timedelta(
