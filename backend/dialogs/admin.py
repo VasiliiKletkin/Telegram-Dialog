@@ -2,11 +2,19 @@ from dal_admin_filters import AutocompleteFilter
 from django.contrib import admin, messages
 from rangefilter.filters import DateTimeRangeFilter
 
-from .forms import (DialogAdminForm, MessageInlineAdminForm,
-                    RoleInlineAdminForm, SceneAdminForm)
+from .forms import (
+    DialogAdminForm,
+    MessageInlineAdminForm,
+    RoleInlineAdminForm,
+    SceneAdminForm,
+)
 from .models import Dialog, Message, Role, Scene
-from .tasks import (check_scene, create_periodic_task_from_scene,
-                    generate_scenes_from_dialog, start_scene)
+from .tasks import (
+    check_scene,
+    create_periodic_task_from_scene,
+    generate_scenes_from_dialog,
+    start_scene,
+)
 
 
 class DialogFilterAdmin(AutocompleteFilter):
@@ -53,7 +61,10 @@ class DialogAdmin(admin.ModelAdmin):
     ]
     inlines = [MessageInlineAdmin]
     form = DialogAdminForm
-    actions = ["generate_scenes",]
+    actions = [
+        "generate_scenes",
+    ]
+    list_editable = ["is_active"]
 
     def generate_scenes(self, request, queryset):
         messages.add_message(request, messages.INFO, "Generate scenes ...")
