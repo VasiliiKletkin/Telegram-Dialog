@@ -3,7 +3,6 @@ import random
 from django.db import models
 from model_utils.models import TimeStampedModel
 from proxies.models import ProxyServer
-from django_telethon.models import 
 
 
 class TelegramUser(
