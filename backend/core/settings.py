@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
-    "django_telethon",
     "django_celery_results",
     "django_celery_beat",
     "taggit",
@@ -56,7 +55,6 @@ INSTALLED_APPS = [
     "telegram",
     "dialogs",
     "imports",
-    "telethonupdt",
 ]
 
 MIDDLEWARE = [

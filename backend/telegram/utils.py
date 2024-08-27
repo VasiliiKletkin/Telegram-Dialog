@@ -1,4 +1,4 @@
-from telethonupdt.sessions import CustomDjangoSession
+from telethon.sessions import StringSession
 from telethon.sync import TelegramClient
 from telethon.tl.functions.channels import JoinChannelRequest
 from asgiref.sync import async_to_sync
@@ -7,7 +7,7 @@ from asgiref.sync import async_to_sync
 @async_to_sync
 async def get_dialogs(client_session, api_id, api_hash, proxy_dict):
     telegram_client = TelegramClient(
-        session=CustomDjangoSession(client_session=client_session),
+        session=StringSession(client_session=client_session),
         api_id=api_id,
         api_hash=api_hash,
         proxy=proxy_dict,
@@ -21,7 +21,7 @@ async def get_dialogs(client_session, api_id, api_hash, proxy_dict):
 @async_to_sync
 async def get_me(client_session, api_id, api_hash, proxy_dict):
     telegram_client = TelegramClient(
-        session=CustomDjangoSession(client_session=client_session),
+        session=StringSession(client_session=client_session),
         api_id=api_id,
         api_hash=api_hash,
         proxy=proxy_dict,
@@ -46,7 +46,7 @@ async def send_message(
     reply_to_msg_id=None,
 ):
     telegram_client = TelegramClient(
-        session=CustomDjangoSession(client_session=client_session),
+        session=StringSession(client_session=client_session),
         api_id=api_id,
         api_hash=api_hash,
         proxy=proxy_dict,
@@ -65,7 +65,7 @@ async def send_message(
 @async_to_sync
 async def get_messages(client_session, api_id, api_hash, proxy_dict, username):
     telegram_client = TelegramClient(
-        session=CustomDjangoSession(client_session=client_session),
+        session=StringSession(client_session=client_session),
         api_id=api_id,
         api_hash=api_hash,
         proxy=proxy_dict,
@@ -80,7 +80,7 @@ async def get_messages(client_session, api_id, api_hash, proxy_dict, username):
 @async_to_sync
 async def join_to_chat(client_session, api_id, api_hash, proxy_dict, chat_id):
     telegram_client = TelegramClient(
-        session=CustomDjangoSession(client_session=client_session),
+        session=StringSession(client_session=client_session),
         api_id=api_id,
         api_hash=api_hash,
         proxy=proxy_dict,

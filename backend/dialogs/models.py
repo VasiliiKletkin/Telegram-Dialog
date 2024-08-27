@@ -5,7 +5,7 @@ from django.forms import ValidationError
 from django.utils import timezone
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
-from telegram.models import TelegramGroup, TelegramUser
+from telegram.models import ListenerTelegramGroup, TelegramGroup, TelegramUser
 
 
 class Dialog(TimeStampedModel):
@@ -107,19 +107,30 @@ class Role(TimeStampedModel):
     def __str__(self):
         return f"name of role:{self.name}, username:{self.telegram_user}"
 
-    # def clean(self):
-    #     if (
-    #         self.scene.roles.filter(telegram_user=self.telegram_user)
-    #         .exclude(id=self.id)
-    #         .exists()
-    #     ):
-    #         raise ValidationError("Role already exists")
+
+class TelegramGroupRole(TimeStampedModel):
+    telegram_group = models.ForeignKey(ListenerTelegramGroup, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    telegram_user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
+
+    def clean(self) -> None:
+        super().clean()
+        if not self.telegram_user.telegram_client:
+            raise ValidationError("Telegram user has no telegram client")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["telegram_group", "name", "telegram_user"],
+                name="telegram_group_name_telegram_user_unique",
+            )
+        ]
 
 
-# class TelegramGroupDialog(TimeStampedModel):
-#     telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
-#     date = models.DateTimeField()
-#     dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name="telegram_dialogs")
-
-#     class Meta:
-#         unique_together = ("telegram_group", "dialog")
+# def clean(self):
+#     if (
+#         self.scene.roles.filter(telegram_user=self.telegram_user)
+#         .exclude(id=self.id)
+#         .exists()
+#     ):
+#         raise ValidationError("Role already exists")

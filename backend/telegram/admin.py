@@ -92,6 +92,6 @@ class TelegramGroupMessageAdmin(admin.ModelAdmin):
     ]
 
 
-admin.site.register(TelegramGroupMessage, TelegramGroupMessageAdmin)
-admin.site.register(TelegramUser, TelegramUserAdmin)
-admin.site.register(TelegramGroup, TelegramGroupAdmin)
+# admin.site.register(TelegramGroupMessage, TelegramGroupMessageAdmin)
+# admin.site.register(TelegramUser, TelegramUserAdmin)
+# admin.site.register(TelegramGroup, TelegramGroupAdmin)
