@@ -12,6 +12,7 @@ class UpdateState(models.Model):
         on_delete=models.CASCADE,
         verbose_name=_("Client Session"),
     )
+    entity_id = models.BigIntegerField()
     pts = models.IntegerField(
         verbose_name=_("pts"),
     )
@@ -28,3 +29,10 @@ class UpdateState(models.Model):
     class Meta:
         verbose_name = _("Update state")
         verbose_name_plural = _("Update states")
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["entity_id", "client_session"],
+                name="entity_id_client_session_unique",
+            )
+        ]
