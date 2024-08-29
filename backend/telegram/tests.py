@@ -1,6 +1,6 @@
 from django.test import TestCase
 from .models import TelegramUser
-from django_telethon.models import App, ClientSession
+from djelethon.models import App, ClientSession
 from proxies.models import ProxyServer
 
 

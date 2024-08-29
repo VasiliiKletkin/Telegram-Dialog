@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from django_telethon.models import App, ClientSession, Login, LoginStatus
+from .models import App, ClientSession, Login, LoginStatus
 
 
 def _get_data(request):

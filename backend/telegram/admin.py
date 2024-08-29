@@ -52,36 +52,36 @@ class TelegramGroupFilterAdmin(AutocompleteFilter):
     autocomplete_url = "telegram_group-autocomplete"
 
 
-class TelegramUserAdmin(admin.ModelAdmin):
-    actions = ["check_obj", "save_all_dialogs"]
-    list_filter = [
-        ("is_active", admin.BooleanFieldListFilter),
-        "sex",
-        ("created", DateTimeRangeFilter),
-    ]
-    list_display = (
-        "__str__",
-        "is_active",
-        "sex",
-        "created",
-        "is_ready",
-    )
-    form = TelegramUserAdminForm
+# class TelegramUserAdmin(admin.ModelAdmin):
+#     actions = ["check_obj", "save_all_dialogs"]
+#     list_filter = [
+#         ("is_active", admin.BooleanFieldListFilter),
+#         ("created", DateTimeRangeFilter),
+#     ]
+#     list_display = (
+#         "__str__",
+#         "is_active",
+#         "created",
+#         "is_ready",
+#     )
+#     form = TelegramUserAdminForm
 
-    def check_obj(self, request, queryset):
-        messages.add_message(request, messages.INFO, "Checking...")
-        for obj in queryset:
-            check_user.delay(obj.id)
+#     def check_obj(self, request, queryset):
+#         messages.add_message(request, messages.INFO, "Checking...")
+#         for obj in queryset:
+#             check_user.delay(obj.id)
 
-    check_obj.short_description = "Check User"
+#     check_obj.short_description = "Check User"
 
-    def save_all_dialogs(self, request, queryset):
-        messages.add_message(request, messages.INFO, "Save all dialogs...")
-        for obj in queryset:
-            save_dialogs_from_user.delay(obj.id)
+#     def save_all_dialogs(self, request, queryset):
+#         messages.add_message(request, messages.INFO, "Save all dialogs...")
+#         for obj in queryset:
+#             save_dialogs_from_user.delay(obj.id)
 
-    save_all_dialogs.short_description = "Save all dialogs"
+#     save_all_dialogs.short_description = "Save all dialogs"
 
+class TelegramClientAdmin(admin.ModelAdmin):
+    pass
 
 class TelegramGroupMessageAdmin(admin.ModelAdmin):
     search_fields = ("text", "user_id")
@@ -92,6 +92,5 @@ class TelegramGroupMessageAdmin(admin.ModelAdmin):
     ]
 
 
-# admin.site.register(TelegramGroupMessage, TelegramGroupMessageAdmin)
-# admin.site.register(TelegramUser, TelegramUserAdmin)
-# admin.site.register(TelegramGroup, TelegramGroupAdmin)
+admin.site.register(TelegramGroupMessage, TelegramGroupMessageAdmin)
+admin.site.register(TelegramGroup, TelegramGroupAdmin)
