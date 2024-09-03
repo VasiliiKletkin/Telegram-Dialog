@@ -21,7 +21,7 @@ dmigr:
 duser:
 	docker-compose exec backend poetry run python manage.py createsuperuser
 dshell:
-	docker-compose exec backend python manage.py shell
+	docker-compose exec backend poetry run python manage.py shell
 
 dcreatedb:
 	docker-compose exec postgres createdb -h ${POSTGRES_HOST} -U ${POSTGRES_USER} ${POSTGRES_DATABASE}

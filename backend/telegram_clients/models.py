@@ -1,5 +1,5 @@
 from django.db import models
-
+import random
 from djelethon.models.apps import App
 from djelethon.models.sessions import ClientSession
 from proxies.models import ProxyServer
@@ -8,21 +8,21 @@ from telegram.models import TelegramUser
 
 class TelegramClient(models.Model):
     is_active = models.BooleanField(default=True)
-    app = models.ForeignKey(App, on_delete=models.CASCADE, null=True)
-    session = models.OneToOneField(ClientSession, on_delete=models.CASCADE, null=True)
+    app = models.ForeignKey(App, on_delete=models.CASCADE)
+    session = models.OneToOneField(ClientSession, on_delete=models.CASCADE)
     phone = models.CharField(max_length=30)
     two_fa = models.CharField(max_length=30)
-    telegram_user = models.OneToOneField(
+    user = models.OneToOneField(
         TelegramUser,
         on_delete=models.CASCADE,
-        related_name="telegram_client",
+        related_name="client",
     )
-    proxy_server = models.OneToOneField(
+    proxy = models.OneToOneField(
         ProxyServer,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name="telegram_client",
+        related_name="client",
     )
 
     error = models.TextField(null=True, blank=True)
@@ -30,13 +30,13 @@ class TelegramClient(models.Model):
     @property
     def is_ready(self):
         return (
-            (self.proxy_server.is_ready and self.is_active and not self.error)
-            if self.proxy_server
+            (self.proxy.is_ready and self.is_active and not self.error)
+            if self.proxy
             else False
         )
 
     def __str__(self):
-        return f"{self.telegram_user.id} - @{self.telegram_user.username} - {self.telegram_user.first_name}  {self.telegram_user.last_name}"
+        return f"{self.user.id} - @{self.user.username} - {self.user.first_name}  {self.user.last_name}"
 
     @classmethod
     def get_random(cls, include_ids=None, exclude_ids=None):

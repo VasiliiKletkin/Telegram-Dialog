@@ -5,7 +5,7 @@ from django.forms import ValidationError
 from django.utils import timezone
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
-from telegram.models import ListenerTelegramGroup, TelegramGroup, TelegramUser
+from telegram.models import TelegramGroup, TelegramUser, TelegramGroupMessage
 
 
 class Dialog(TimeStampedModel):
@@ -45,9 +45,8 @@ class Message(TimeStampedModel):
         return f"{self.id}, role:{self.role_name}, text:{self.text[:10]}"
 
     def clean(self) -> None:
-        if self.reply_to_msg:
-            if self.reply_to_msg.dialog != self.dialog:
-                raise ValidationError("reply_to_msg link on different dialog")
+        if self.reply_to_msg and self.reply_to_msg.dialog != self.dialog:
+            raise ValidationError("reply_to_msg link on different dialog")
         return super().clean()
 
 
@@ -62,7 +61,7 @@ class Scene(TimeStampedModel):
         unique_together = ("dialog", "telegram_group")
 
     def __str__(self):
-        return f"{self.id}, dialog:{self.dialog.name}, group:@{self.telegram_group.username}"
+        return f"{self.id}, dialog:{self.dialog.name}, group:@{self.telegram_group.groupname}"
 
     @property
     def is_ready(self):
@@ -109,13 +108,13 @@ class Role(TimeStampedModel):
 
 
 class TelegramGroupRole(TimeStampedModel):
-    telegram_group = models.ForeignKey(ListenerTelegramGroup, on_delete=models.CASCADE)
+    telegram_group = models.ForeignKey(TelegramGroupMessage, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     telegram_user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
 
     def clean(self) -> None:
         super().clean()
-        if not self.telegram_user.telegram_client:
+        if not self.telegram_user.client:
             raise ValidationError("Telegram user has no telegram client")
 
     class Meta:

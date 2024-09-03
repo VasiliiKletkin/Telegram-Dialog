@@ -50,15 +50,16 @@ INSTALLED_APPS = [
     "django_celery_results",
     "django_celery_beat",
     "debug_toolbar",
-    "django_telethon",
     "telegram_clients",
     "djelethon",
     "taggit",
     "proxies",
     "telegram",
-    "dialogs",
+    "sources",
     "imports",
 ]
+
+CELERY_TASK_ALWAYS_EAGER = True
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

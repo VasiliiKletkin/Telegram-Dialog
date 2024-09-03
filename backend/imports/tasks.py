@@ -11,8 +11,8 @@ from .models import TelegramUserImport
 
 
 @app.task
-def convert_to_orm(id):
-    tui = TelegramUserImport.objects.get(id=id)
+def convert_to_orm(import_id):
+    tui = TelegramUserImport.objects.get(id=import_id)
     json_data = json.loads(tui.json_field.read())
 
     app, app_is_created = App.objects.get_or_create(
@@ -23,25 +23,24 @@ def convert_to_orm(id):
         name=json_data["id"],
     )
 
-    TelegramUser.objects.get_or_create(
+    user, created = TelegramUser.objects.get_or_create(
         id=json_data["id"],
         defaults={
             "username": json_data.get("username"),
             "first_name": json_data.get("first_name"),
             "last_name": json_data.get("last_name"),
+            "sex": json_data.get("sex"),
         },
     )
 
     TelegramClient.objects.get_or_create(
-        app=app,
-        client_session=client_session,
+        user=user,
         defaults={
             "phone": json_data.get("phone"),
             "two_fa": json_data["twoFA"],
-            "app_json": json_data,
             "app": app,
-            "client_session": client_session,
-        }
+            "session": client_session,
+        },
     )
 
     sql_session = SQLiteSession(tui.session_file.path)

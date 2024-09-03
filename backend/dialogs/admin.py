@@ -56,7 +56,7 @@ class DialogAdmin(admin.ModelAdmin):
     list_filter = [
         ("is_active", admin.BooleanFieldListFilter),
         ("created", DateTimeRangeFilter),
-        TagFilter,
+        # TagFilter,
         TelegramGroupFilterAdmin,
     ]
     inlines = [MessageInlineAdmin]

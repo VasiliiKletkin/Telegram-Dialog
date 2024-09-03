@@ -6,4 +6,5 @@ class TelegramConfig(AppConfig):
     name = 'telegram'
     
     def ready(self):
-        from . import tasks
+        pass
+        # from . import tasks

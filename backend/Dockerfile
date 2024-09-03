@@ -11,5 +11,5 @@ WORKDIR /home/app/backend
 COPY ./pyproject.toml ./poetry.lock* ./
 
 RUN poetry install
-
+RUN poetry add debugpy
 COPY . .

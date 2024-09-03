@@ -3,9 +3,18 @@ from model_utils.models import TimeStampedModel
 
 
 class ProxyServer(TimeStampedModel):
+    SOCKS5 = "socks5"
+    SOCKS4 = "socks4"
+
+    PROTOCOL_CHOICE = ((SOCKS5, "Socks5"), (SOCKS4, "Socks4"))
+
     is_active = models.BooleanField(default=True)
 
-    protocol = models.CharField(max_length=10, default="socks5")
+    protocol = models.CharField(
+        max_length=10,
+        choices=PROTOCOL_CHOICE,
+        default=SOCKS5,
+    )
     address = models.CharField(max_length=100, unique=True)
     port = models.IntegerField()
     username = models.CharField(max_length=100)
