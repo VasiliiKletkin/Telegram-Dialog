@@ -1,6 +1,18 @@
 from django.contrib import admin
 
 from .models import TelegramClient
+from typing import Any
+
+from dal_admin_filters import AutocompleteFilter
+from django.contrib import admin, messages
+from rangefilter.filters import DateTimeRangeFilter
+
+from .forms import TelegramClientAdminForm
+
+from .tasks import (
+    check_client,
+    update_user,
+)
 
 
 @admin.register(TelegramClient)
@@ -10,29 +22,26 @@ class TelegramClientAdmin(admin.ModelAdmin):
     list_display = (
         "__str__",
         "is_active",
-        "sex",
-        "created",
         "is_ready",
     )
     list_filter = [
         ("is_active", admin.BooleanFieldListFilter),
-        # ("created", DateTimeRangeFilter),
     ]
-    form = TelegramUserAdminForm
+    form = TelegramClientAdminForm
 
     def check_obj(self, request, queryset):
         messages.add_message(request, messages.INFO, "Checking...")
         for obj in queryset:
-            check_user.delay(obj.id)
+            check_client.delay(obj.id)
 
-    check_obj.short_description = "Check User"
+    check_obj.short_description = "Check client"
 
-    def save_all_dialogs(self, request, queryset):
-        messages.add_message(request, messages.INFO, "Save all dialogs...")
-        for obj in queryset:
-            save_dialogs_from_user.delay(obj.id)
+    # def save_all_dialogs(self, request, queryset):
+    #     messages.add_message(request, messages.INFO, "Save all dialogs...")
+    #     for obj in queryset:
+    #         save_dialogs_from_user.delay(obj.id)
 
-    save_all_dialogs.short_description = "Save all dialogs"
+    # save_all_dialogs.short_description = "Save all dialogs"
 
 
 # class TagFilter(AutocompleteFilter):

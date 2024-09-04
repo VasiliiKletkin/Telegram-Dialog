@@ -12,6 +12,26 @@ from .utils import (
 
 
 @app.task()
+def update_user(user_id):
+    user = TelegramUser.objects.get(id=user_id)
+
+    client: TelegramClient = user.client
+
+    me = get_me(
+        client_session=client.session,
+        api_id=client.app.api_id,
+        api_hash=client.app.api_hash,
+        proxy_dict=client.proxy.get_proxy_dict(),
+    )
+
+    user.first_name = me.first_name
+    user.last_name = me.last_name
+    user.username = me.username
+    user.lang_code = me.lang_code
+    user.save()
+
+
+@app.task()
 def check_client(client_id):
     try:
         client = TelegramClient.objects.get(id=client_id)
@@ -30,6 +50,7 @@ def check_client(client_id):
         elif proxy_server.error:
             raise Exception(f"Proxy error:{proxy_server.error}")
 
+        update_user(client.user.id)
     except PhoneNumberBannedError as error:
         client.error = str(error)
         client.is_active = False
@@ -40,27 +61,6 @@ def check_client(client_id):
         client.error = None
     finally:
         client.save()
-
-
-@app.task()
-def check_user(user_id):
-    user = TelegramUser.objects.get(id=user_id)
-
-    client: TelegramClient = user.client
-
-    check_client(client.id)
-    client.refresh_from_db()
-
-    if not client.is_ready:
-        raise Exception("Client is not ready")
-    me = get_me(
-        client_session=client.session,
-        api_id=client.app.api_id,
-        api_hash=client.app.api_hash,
-        proxy_dict=client.proxy.get_proxy_dict(),
-    )
-
-    user.update(first_name=me.first_name, last_name=me.last_name, username=me.username)
 
 
 @app.task()

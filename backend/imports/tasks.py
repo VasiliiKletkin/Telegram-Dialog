@@ -29,6 +29,7 @@ def convert_to_orm(import_id):
             "username": json_data.get("username"),
             "first_name": json_data.get("first_name"),
             "last_name": json_data.get("last_name"),
+            "lang_code": json_data.get("lang_code"),
             "sex": json_data.get("sex"),
         },
     )

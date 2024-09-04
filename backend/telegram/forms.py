@@ -15,11 +15,3 @@ class TelegramGroupAdminForm(ModelForm):
                                                                 )
         }
 
-
-class TelegramUserAdminForm(ModelForm):
-    class Meta:
-        model = TelegramUser
-        fields = "__all__"
-        widgets = {
-            "proxy_server": autocomplete.ModelSelect2(url="proxy_server-autocomplete"),
-        }

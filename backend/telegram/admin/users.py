@@ -5,7 +5,6 @@ from django.contrib import admin, messages
 from rangefilter.filters import DateTimeRangeFilter
 from ..models import TelegramUser
 
-from ..forms import TelegramGroupAdminForm, TelegramUserAdminForm
 # from ..tasks import (
 #     check_user,
 #     generate_dialogs_from_group,
