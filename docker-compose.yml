@@ -39,7 +39,7 @@ services:
       - postgres
       - redis
     entrypoint: poetry run bash entrypoint.sh
-    command: poetry run debugpy --wait-for-client --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000 --nothreading
+    command: poetry run debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000
     # command: poetry run python manage.py runserver 0.0.0.0:8000
   flower:
     build:

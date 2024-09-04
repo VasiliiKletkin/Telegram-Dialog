@@ -30,6 +30,7 @@ def convert_to_orm(import_id):
             "first_name": json_data.get("first_name"),
             "last_name": json_data.get("last_name"),
             "lang_code": json_data.get("lang_code"),
+            "phone": json_data.get("phone"),
             "sex": json_data.get("sex"),
         },
     )
@@ -37,7 +38,6 @@ def convert_to_orm(import_id):
     TelegramClient.objects.get_or_create(
         user=user,
         defaults={
-            "phone": json_data.get("phone"),
             "two_fa": json_data["twoFA"],
             "app": app,
             "session": client_session,

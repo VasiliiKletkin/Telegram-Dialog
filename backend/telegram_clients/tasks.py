@@ -28,6 +28,7 @@ def update_user(user_id):
     user.last_name = me.last_name
     user.username = me.username
     user.lang_code = me.lang_code
+    user.phone = me.phone
     user.save()
 
 

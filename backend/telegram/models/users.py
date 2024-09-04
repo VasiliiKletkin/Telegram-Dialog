@@ -16,6 +16,7 @@ class TelegramUser(TimeStampedModel):
     first_name = models.CharField(max_length=64, null=True, blank=True)
     last_name = models.CharField(max_length=64, null=True, blank=True)
     lang_code = models.CharField(max_length=8, null=True, blank=True)
+    phone = models.CharField(max_length=32, null=True, blank=True)
     sex = models.PositiveIntegerField(choices=SEX_CHOICE, null=True, blank=True)
 
     class Meta:
