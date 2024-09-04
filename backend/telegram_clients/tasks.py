@@ -14,7 +14,6 @@ from .utils import (
 @app.task()
 def update_user(user_id):
     user = TelegramUser.objects.get(id=user_id)
-
     client: TelegramClient = user.client
 
     me = get_me(

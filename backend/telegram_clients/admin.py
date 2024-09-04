@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import TelegramClient
-from typing import Any
+from typing import Any, List
 
 from dal_admin_filters import AutocompleteFilter
 from django.contrib import admin, messages

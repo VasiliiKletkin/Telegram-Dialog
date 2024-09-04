@@ -3,13 +3,11 @@ from model_utils.models import TimeStampedModel
 from .users import TelegramUser
 
 
-class TelegramGroup(TimeStampedModel):
-    id = models.BigIntegerField(primary_key=True)
-    name = models.CharField(max_length=255)
+class TelegramGroup(TimeStampedModel):    
     groupname = models.CharField(max_length=32, unique=True)
-    members = models.ManyToManyField(
-        TelegramUser, related_name="groups", blank=True
-    )
+    name = models.CharField(max_length=255)
+    g_id = models.BigIntegerField(unique=True, null=True, blank=True)
+    members = models.ManyToManyField(TelegramUser, related_name="groups", blank=True)
 
     class Meta:
         indexes = [
