@@ -9,7 +9,6 @@ from telegram.models import TelegramGroup, TelegramUser
 import random
 from ..models import Scene, Dialog, Message
 from telegram.models import TelegramGroupMessage
-from telegram_clients.tasks import send_message
 import json
 from datetime import timedelta
 from django.utils import timezone
@@ -19,11 +18,9 @@ from core.celery import app
 from django.utils import timezone
 from django_celery_beat.models import ClockedSchedule, PeriodicTask
 from telegram.models import TelegramGroup, TelegramUser
-from telegram.tasks import check_user, join_user_to_chat, save_dialogs_from_user
 import random
-from .models import Scene, Dialog, Message
+from ..models import Scene, Dialog, Message
 from telegram.models import TelegramGroupMessage
-from telegram_clients.tasks import send_message
 
 
 @app.task()
@@ -41,7 +38,7 @@ def check_scene(scene_id):
         join_to_chat_users_from_scene(scene.id)
 
         for user in telegram_users:
-            check_user(user.id)
+            # check_user(user.id)
             user.refresh_from_db()
 
             if not user.is_active:
@@ -154,26 +151,26 @@ def send_message_from_scene(message_id, scene_id):
         except TelegramGroupMessage.DoesNotExist:
             pass
 
-    sent_message = send_message(
-        client_session=telegram_user.client_session,
-        api_id=telegram_user.app.api_id,
-        api_hash=telegram_user.app.api_hash,
-        proxy_dict=telegram_user.proxy_server.get_proxy_dict(),
-        username=scene.telegram_group.username,
-        text=message.text,
-        reply_to_msg_id=reply_to_msg_id,
-    )
+    # sent_message = send_message(
+    #     client_session=telegram_user.client_session,
+    #     api_id=telegram_user.app.api_id,
+    #     api_hash=telegram_user.app.api_hash,
+    #     proxy_dict=telegram_user.proxy_server.get_proxy_dict(),
+    #     username=scene.telegram_group.username,
+    #     text=message.text,
+    #     reply_to_msg_id=reply_to_msg_id,
+    # )
 
-    TelegramGroupMessage.objects.create(
-        telegram_group=scene.telegram_group,
-        message_id=sent_message.id,
-        text=sent_message.message,
-        date=sent_message.date,
-        user_id=sent_message.from_id.user_id,
-        reply_to_msg_id=(
-            sent_message.reply_to.reply_to_msg_id if sent_message.reply_to else None
-        ),
-    )
+    # TelegramGroupMessage.objects.create(
+    #     telegram_group=scene.telegram_group,
+    #     message_id=sent_message.id,
+    #     text=sent_message.message,
+    #     date=sent_message.date,
+    #     user_id=sent_message.from_id.user_id,
+    #     reply_to_msg_id=(
+    #         sent_message.reply_to.reply_to_msg_id if sent_message.reply_to else None
+    #     ),
+    # )
 
 
 @app.task()

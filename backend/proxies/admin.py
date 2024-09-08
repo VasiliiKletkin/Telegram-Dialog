@@ -1,11 +1,10 @@
 from django.contrib import admin, messages
 
 from proxies.models import ProxyServer
-from .tasks import check_proxy
 
 
 class ProxyServerAdmin(admin.ModelAdmin):
-    actions = ['check_obj']
+    actions = ["check_obj"]
     list_display = (
         "__str__",
         "created",
@@ -14,9 +13,10 @@ class ProxyServerAdmin(admin.ModelAdmin):
     )
 
     def check_obj(self, request, queryset):
-        messages.add_message(request, messages.INFO, 'Checking...')
+        messages.add_message(request, messages.INFO, "Checking...")
         for obj in queryset:
-            check_proxy.delay(obj.id)
+            obj.check_obj()
+
     check_obj.short_description = "Check Proxy"
 
 

@@ -9,10 +9,6 @@ from rangefilter.filters import DateTimeRangeFilter
 
 from .forms import TelegramClientAdminForm
 
-from .tasks import (
-    check_client,
-    update_user,
-)
 
 
 @admin.register(TelegramClient)
@@ -32,7 +28,7 @@ class TelegramClientAdmin(admin.ModelAdmin):
     def check_obj(self, request, queryset):
         messages.add_message(request, messages.INFO, "Checking...")
         for obj in queryset:
-            check_client.delay(obj.id)
+            obj.check_obj()
 
     check_obj.short_description = "Check client"
 

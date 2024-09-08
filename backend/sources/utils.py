@@ -1,10 +1,5 @@
 from dialogs.models import Message
 
-from .utils import (
-    get_answer_from_message,
-    get_dialog_messages_from_dict,
-)
-
 
 def get_answer_from_message(group_messages, ask_message):
     answer_messages = group_messages.filter(reply_to_msg_id=ask_message.message_id)

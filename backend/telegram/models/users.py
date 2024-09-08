@@ -36,4 +36,4 @@ class TelegramUser(TimeStampedModel):
         return f"@{self.username}" if self.username else None
 
     def __str__(self):
-        return f"id:{self.id}-{self.get_username()}"
+        return f"id:{self.id}-{self.get_username()}-{self.first_name} {self.last_name}"

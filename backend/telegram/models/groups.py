@@ -7,15 +7,17 @@ class TelegramGroup(TimeStampedModel):
     id = models.BigIntegerField(primary_key=True)
     groupname = models.CharField(max_length=32, unique=True)
     name = models.CharField(max_length=255)
-    members = models.ManyToManyField(TelegramUser, related_name="groups", blank=True)
+    members = models.ManyToManyField(
+        TelegramUser,
+        related_name="groups",
+        blank=True,
+    )
 
     class Meta:
         indexes = [
             models.Index(fields=["groupname"], name="groupname_idx"),
+            models.Index(fields=["name"], name="name_idx"),
         ]
-
-    def get_members_count(self):
-        return self.members.count()
 
     def get_messages_count(self):
         return self.messages.count()

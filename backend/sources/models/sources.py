@@ -1,28 +1,62 @@
-# trunk-ignore-all(isort)
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.timezone import now
-from telegram.models import TelegramGroup, TelegramUser
-from model_utils.models import TimeStampedModel
+from telegram.models import TelegramGroup
+# from roles.models import ActorUser, ListenerUser
 
 
 class TelegramGroupSource(TelegramGroup):
 
-    def download_messages(self, limit=1000):
+    # listeners = models.ManyToManyField(
+    #     ListenerUser,
+    #     related_name="listener_sources",
+    #     blank=True,
+    # )
+
+    # actors = models.ManyToManyField(
+    #     ActorUser,
+    #     related_name="actor_sources",
+    #     blank=True,
+    #     through="TelegramGroupRole",
+    # )
+
+    errors = models.TextField(null=True, blank=True)
+
+    @property
+    def is_ready(self):
+        return all(listener.is_member(self.id) for listener in self.listeners.all())
+
+    def check_source(self):
+        try:
+            errors = ""
+            for listener in self.listeners.all():
+                if not listener.is_member(self.id):
+                    errors += f"{listener} is not member of {self},"
+            if errors:
+                raise Exception(f"Listeners:{errors}")
+        except Exception as e:
+            self.errors = str(e)
+        else:
+            self.errors = None
+        finally:
+            self.save()
+
+    def get_messages(self, limit=1000):
+        pass
+
+    def get_members(self):
         pass
 
     def create_roles_with_available_actors(self):
         roles = self.roles.all()
-        available_actors = TelegramUser.objects.filter(client__isnull=False).exclude(
-            actor_roles__in=roles
-        )
+        available_actors = ActorUser.objects.exclude(actor_roles__in=roles)
         members = self.members.all()
 
-        if members.count() > available_actors.count():
+        if members.count() < available_actors.count():
             raise ValidationError(
-                f"Members count{members.count()} more than available actors count {available_actors.count()}"
+                f"Available actors{available_actors.count()} more than members{members.count()}"
             )
         for index, member in enumerate(members):
             roles.create(member=member, actor=available_actors[index])
@@ -54,43 +88,3 @@ class TelegramGroupSource(TelegramGroup):
             )
         for index, member in enumerate(members_without_roles):
             unusable_roles[index].update(member=member)
-
-    class Meta:
-        proxy = True
-
-
-class TelegramGroupRole(TimeStampedModel):
-    group = models.ForeignKey(
-        TelegramGroupSource,
-        on_delete=models.CASCADE,
-        related_name="roles",
-    )
-    member = models.ForeignKey(
-        TelegramUser,
-        on_delete=models.CASCADE,
-        related_name="member_roles",
-    )
-    actor = models.ForeignKey(
-        TelegramUser,
-        on_delete=models.CASCADE,
-        related_name="actor_roles",
-    )
-
-    def clean(self) -> None:
-        super().clean()
-        if not self.member.is_member(self.group.id):
-            raise ValidationError("Member must be member of the group")
-        if self.member == self.actor:
-            raise ValidationError("Member must not be equal actor")
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=[
-                    "group",
-                    "member",
-                    "actor",
-                ],
-                name="group_member_actor_unique",
-            )
-        ]

@@ -55,7 +55,7 @@ class Scene(TimeStampedModel):
     start_date = models.DateTimeField(default=timezone.now)
     telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE)
     dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name="scenes")
-    error = models.TextField(null=True, blank=True)
+    errors = models.TextField(null=True, blank=True)
 
     class Meta:
         unique_together = ("dialog", "telegram_group")
@@ -70,7 +70,7 @@ class Scene(TimeStampedModel):
             and self.are_users_ready
             and self.are_users_members_of_group
             and self.is_active
-            and not self.error
+            and not self.errors
         )
 
     @property

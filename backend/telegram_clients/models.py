@@ -4,13 +4,14 @@ from djelethon.models.apps import App
 from djelethon.models.sessions import ClientSession
 from proxies.models import ProxyServer
 from telegram.models import TelegramUser
+from telethon.errors import PhoneNumberBannedError
+from telegram.models import TelegramUser
 
 
 class TelegramClient(models.Model):
     is_active = models.BooleanField(default=True)
     app = models.ForeignKey(App, on_delete=models.CASCADE)
     session = models.OneToOneField(ClientSession, on_delete=models.CASCADE)
-    phone = models.CharField(max_length=30)
     two_fa = models.CharField(max_length=30)
     user = models.OneToOneField(
         TelegramUser,
@@ -25,18 +26,44 @@ class TelegramClient(models.Model):
         related_name="client",
     )
 
-    error = models.TextField(null=True, blank=True)
+    errors = models.TextField(null=True, blank=True)
 
     @property
     def is_ready(self):
         return (
-            (self.proxy.is_ready and self.is_active and not self.error)
+            (self.proxy.is_ready and self.is_active and not self.errors)
             if self.proxy
             else False
         )
 
     def __str__(self):
         return f"{self.user.id} - @{self.user.username} - {self.user.first_name}  {self.user.last_name}"
+
+    def check_obj(self):
+        try:
+            proxy_server = self.proxy
+
+            if not proxy_server:
+                raise Exception("Proxy does not exist")
+            proxy_server.check_obj()
+            if not proxy_server.is_active:
+                raise Exception("Proxy is not active")
+            elif not proxy_server.is_ready:
+                raise Exception("Proxy is not ready")
+            elif proxy_server.errors:
+                raise Exception(f"Proxy error:{proxy_server.errors}")
+
+            # update_user(client.user.id)
+        except PhoneNumberBannedError as error:
+            self.errors = str(error)
+            self.is_active = False
+
+        except Exception as error:
+            self.errors = str(error)
+        else:
+            self.errors = None
+        finally:
+            self.save()
 
     @classmethod
     def get_random(cls, include_ids=None, exclude_ids=None):

@@ -1,5 +1,5 @@
 from core.celery import app
-from proxies.tasks import check_proxy
+# from proxies.tasks import check_proxy
 from telethon.errors import PhoneNumberBannedError
 from telegram.models import TelegramGroup
 from .models import TelegramClient
@@ -23,44 +23,44 @@ def update_user(user_id):
         proxy_dict=client.proxy.get_proxy_dict(),
     )
 
-    user.first_name = me.first_name
-    user.last_name = me.last_name
-    user.username = me.username
-    user.lang_code = me.lang_code
-    user.phone = me.phone
+    user.first_name = me.first_name or user.first_name
+    user.last_name = me.last_name or user.last_name
+    user.username = me.username or user.username
+    user.lang_code = me.lang_code or user.lang_code
+    user.phone = me.phone or user.phone
     user.save()
 
 
-@app.task()
-def check_client(client_id):
-    try:
-        client = TelegramClient.objects.get(id=client_id)
-        proxy_server = client.proxy
+# @app.task()
+# def check_client(client_id):
+#     try:
+#         client = TelegramClient.objects.get(id=client_id)
+#         proxy_server = client.proxy
 
-        if not proxy_server:
-            raise Exception("Proxy does not exist")
+#         if not proxy_server:
+#             raise Exception("Proxy does not exist")
 
-        check_proxy(proxy_server.id)
-        proxy_server.refresh_from_db()
+#         check_proxy(proxy_server.id)
+#         proxy_server.refresh_from_db()
 
-        if not proxy_server.is_active:
-            raise Exception("Proxy is not active")
-        elif not proxy_server.is_ready:
-            raise Exception("Proxy is not ready")
-        elif proxy_server.error:
-            raise Exception(f"Proxy error:{proxy_server.error}")
+#         if not proxy_server.is_active:
+#             raise Exception("Proxy is not active")
+#         elif not proxy_server.is_ready:
+#             raise Exception("Proxy is not ready")
+#         elif proxy_server.errors:
+#             raise Exception(f"Proxy error:{proxy_server.errors}")
 
-        update_user(client.user.id)
-    except PhoneNumberBannedError as error:
-        client.error = str(error)
-        client.is_active = False
+#         update_user(client.user.id)
+#     except PhoneNumberBannedError as error:
+#         client.errors = str(error)
+#         client.is_active = False
 
-    except Exception as error:
-        client.error = str(error)
-    else:
-        client.error = None
-    finally:
-        client.save()
+#     except Exception as error:
+#         client.errors = str(error)
+#     else:
+#         client.errors = None
+#     finally:
+#         client.save()
 
 
 @app.task()

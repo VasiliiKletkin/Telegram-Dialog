@@ -13,9 +13,12 @@ class TelegramGroupMessage(models.Model):
     user = models.ForeignKey(
         TelegramUser, on_delete=models.CASCADE, related_name="messages"
     )
-    reply_to_msg_id = models.BigIntegerField(
+    reply_to_msg = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name="replies",
     )
 
     class Meta:
@@ -27,8 +30,7 @@ class TelegramGroupMessage(models.Model):
         ]
         indexes = [
             models.Index(fields=["message_id"], name="message_id_idx"),
-            models.Index(fields=["reply_to_msg_id"], name="reply_to_msg_id_idx"),
         ]
 
     def __str__(self):
-        return f"@{self.group} - {self.text[:20]}"
+        return f"mes_id:{self.message_id} - {self.group.get_groupname()} - {self.text[:20]}"

@@ -1,5 +1,6 @@
 from django.db import models
 from model_utils.models import TimeStampedModel
+import requests
 
 
 class ProxyServer(TimeStampedModel):
@@ -20,14 +21,35 @@ class ProxyServer(TimeStampedModel):
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
 
-    error = models.TextField(null=True, blank=True)
-
-    @property
-    def is_ready(self):
-        return self.is_active and not self.error
+    errors = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.protocol}://{self.username}:{self.password}@{self.address}:{self.port}"
+
+    @property
+    def is_ready(self):
+        return self.is_active and not self.errors
+
+    def check_obj(self):
+        try:
+            proxies = {"http": str(self)}
+            response = requests.get(
+                "http://www.httpbin.org/ip",
+                proxies=proxies,
+            )
+            resp_data = response.json()
+
+            if resp_data["origin"] != self.address:
+                raise Exception(
+                    f'Ip address{self.address} is not equal from http://www.httpbin.org/ip {resp_data["origin"]}'
+                )
+
+        except Exception as error:
+            self.error = str(error)
+        else:
+            self.error = None
+        finally:
+            self.save()
 
     def get_proxy_dict(self):
         return {

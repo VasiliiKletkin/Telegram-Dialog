@@ -56,7 +56,10 @@ INSTALLED_APPS = [
     "proxies",
     "telegram",
     "sources",
+    "dialogs",
+    "drains",
     "imports",
+    "roles",
 ]
 
 CELERY_TASK_ALWAYS_EAGER = True
