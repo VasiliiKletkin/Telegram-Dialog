@@ -3,7 +3,7 @@ import json
 from core.celery import app
 from djelethon.models import App, ClientSession
 from djelethon.sessions import DjangoSession
-from telegram.models import TelegramUser
+from telegram_users.models import TelegramUser
 from telegram_clients.models import TelegramClient
 from telethon.sessions import SQLiteSession
 

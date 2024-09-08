@@ -1,8 +1,8 @@
-from telegram_groups.models import TelegramGroupSource
+from groups.models import TelegramGroupSource
 from django.core.exceptions import ValidationError
 from django.db import models
 from model_utils.models import TimeStampedModel
-from telegram_users.models import ActorUser, MemberUser
+from users.models import ActorUser, MemberUser
 
 
 class TelegramGroupRole(TimeStampedModel):

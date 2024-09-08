@@ -54,12 +54,11 @@ INSTALLED_APPS = [
     "djelethon",
     "taggit",
     "proxies",
-    "telegram",
-    "sources",
-    "dialogs",
-    "drains",
-    "imports",
     "roles",
+    "imports",
+    "telegram_groups",
+    "telegram_users",
+    "telegram_messages",
 ]
 
 CELERY_TASK_ALWAYS_EAGER = True

@@ -5,86 +5,53 @@ from asgiref.sync import async_to_sync
 
 
 @async_to_sync
-async def get_dialogs(client_session, api_id, api_hash, proxy_dict):
-    telegram_client = TelegramClient(
-        session=DjangoSession(client_session=client_session),
-        api_id=api_id,
-        api_hash=api_hash,
-        proxy=proxy_dict,
-    )
+async def get_dialogs(client: TelegramClient):
     dialogs = []
-    async with telegram_client:
-        dialogs = await telegram_client.get_dialogs(limit=200)
+    async with client:
+        dialogs = await client.get_dialogs(limit=200)
     return dialogs
 
 
 @async_to_sync
-async def get_me(client_session, api_id, api_hash, proxy_dict):
-    telegram_client = TelegramClient(
-        session=DjangoSession(client_session=client_session),
-        api_id=api_id,
-        api_hash=api_hash,
-        proxy=proxy_dict,
-    )
-    # await telegram_client.start(
+async def get_me(client: TelegramClient):
+    # await client.start(
     #     phone=telegram_user.phone, password=telegram_user.two_fa
     # )
     me = None
-    async with telegram_client:
-        me = await telegram_client.get_me()
+    async with client:
+        me = await client.get_me()
     return me
 
 
 @async_to_sync
-async def send_message(
-    client_session,
-    api_id,
-    api_hash,
-    proxy_dict,
-    username,
-    text,
-    reply_to_msg_id=None,
-):
-    telegram_client = TelegramClient(
-        session=DjangoSession(client_session=client_session),
-        api_id=api_id,
-        api_hash=api_hash,
-        proxy=proxy_dict,
-    )
-    message = None
-    async with telegram_client:
-        chat = await telegram_client.get_entity(username)
-        message = await telegram_client.send_message(
-            chat,
-            text,
+async def send_message(client: TelegramClient, chat_id, text, reply_to_msg_id=None):
+    async with client:
+        entity = await client.get_entity(chat_id)
+        return await client.send_message(
+            entity=entity,
+            message=text,
             reply_to=reply_to_msg_id,
         )
-    return message
 
 
 @async_to_sync
-async def get_messages(client_session, api_id, api_hash, proxy_dict, username):
-    telegram_client = TelegramClient(
-        session=DjangoSession(client_session=client_session),
-        api_id=api_id,
-        api_hash=api_hash,
-        proxy=proxy_dict,
-    )
+async def get_messages(client: TelegramClient, chat_id, limit=1000):
     messages = []
-    async with telegram_client:
-        entity = await telegram_client.get_entity(username)
-        messages = await telegram_client.get_messages(entity, limit=1000)
+    async with client:
+        entity = await client.get_entity(chat_id)
+        messages = await client.get_messages(entity, limit=limit)
     return messages
 
 
 @async_to_sync
-async def join_to_chat(client_session, api_id, api_hash, proxy_dict, chat_id):
-    telegram_client = TelegramClient(
-        session=DjangoSession(client_session=client_session),
-        api_id=api_id,
-        api_hash=api_hash,
-        proxy=proxy_dict,
-    )
-    async with telegram_client:
-        chat = await telegram_client.get_entity(chat_id)
-        await telegram_client(JoinChannelRequest(chat))
+async def join_chat(client: TelegramClient, chat_id):
+    async with client:
+        chat = await client.get_entity(chat_id)
+        await client(JoinChannelRequest(chat))
+
+
+@async_to_sync
+async def get_participants(client: TelegramClient, chat_id: int):
+    async with client:
+        chat = await client.get_entity(chat_id)
+        return await client.get_participants(chat)
