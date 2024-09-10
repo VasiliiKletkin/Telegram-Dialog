@@ -1,19 +1,22 @@
 from dal import autocomplete, forward
 from django import forms
 
-from .models import Dialog, Message, Role, Scene
+from .models import DialogMessage, SceneRole, Scene
 
 
-class RoleInlineAdminForm(forms.ModelForm):
+class SceneRoleInlineAdminForm(forms.ModelForm):
     name = autocomplete.Select2ListChoiceField(
-        choice_list=Message.objects.values_list("role_name", "role_name").distinct(),
+        choice_list=DialogMessage.objects.values_list(
+            "role_name",
+            "role_name",
+        ).distinct(),
         widget=autocomplete.ListSelect2(
             url="message_role_name-autocomplete", forward=["dialog"]
         ),
     )
 
     class Meta:
-        model = Role
+        model = SceneRole
         fields = "__all__"
         widgets = {
             "telegram_user": autocomplete.ModelSelect2(
@@ -22,9 +25,9 @@ class RoleInlineAdminForm(forms.ModelForm):
         }
 
 
-class MessageInlineAdminForm(forms.ModelForm):
+class DialogMessageInlineAdminForm(forms.ModelForm):
     class Meta:
-        model = Message
+        model = DialogMessage
         fields = "__all__"
         widgets = {
             "reply_to_msg": autocomplete.ModelSelect2(
@@ -47,11 +50,3 @@ class SceneAdminForm(forms.ModelForm):
                 forward=["telegram_group", forward.Const(True, "is_active")],
             ),
         }
-
-class DialogAdminForm(forms.ModelForm):
-    class Meta:
-        model = Dialog
-        fields = "__all__"
-        # widgets = {
-        #     "tags": autocomplete.TaggitSelect2(url="tag-autocomplete"),
-        # }

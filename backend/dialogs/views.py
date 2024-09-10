@@ -10,13 +10,10 @@ class MessageRoleNameAutocomplete(autocomplete.Select2ListView):
         qs = (
             DialogMessage.objects.all().values_list("role_name", "role_name").distinct()
         )
-
         if dialog := self.forwarded.get("dialog", None):
             qs = qs.filter(dialog=dialog)
-
             if self.q:
                 qs = qs.filter(Q(role_name__icontains=self.q))
-
             return qs
         return []
 

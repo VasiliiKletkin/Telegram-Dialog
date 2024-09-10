@@ -39,8 +39,7 @@ class Scene(TimeStampedModel):
         )
 
     def get_actors(self):
-        roles = self.roles.all()
-        return ActorUser.objects.filter(roles__in=roles)
+        return ActorUser.objects.filter(scene_roles__in=self.roles.all()).distinct()
 
     @property
     def roles_count(self):
@@ -53,22 +52,15 @@ class Scene(TimeStampedModel):
                 self.drain.members.add(actor)
 
     def check_obj(self):
-        roles = self.roles.all()
-        actors = ActorUser.objects.filter(roles__in=roles).distinct()
+        actors = self.get_actors()
         try:
             if self.roles_count != self.dialog.roles_count:
                 raise Exception(
                     "Count of roles of Dialog are not equal count of roles of scene"
                 )
-            for actor in actors:
-                if not actor.is_active:
-                    raise Exception(f"{actor} is not active")
-                elif not actor.is_ready:
-                    raise Exception(f"{actor} is not ready")
-                elif actor.errors:
-                    raise Exception(f"{actor} has errors")
-                elif not actor.is_member(self.drain.get_id()):
-                    raise Exception(f"{actor} is not member of group")
+            errors = self._check_errors(actors)
+            if errors:
+                raise Exception(errors)
         except Exception as error:
             self.error = str(error)
         else:
@@ -77,8 +69,20 @@ class Scene(TimeStampedModel):
             self.last_check = now()
             self.save()
 
+    def _check_errors(self, actors: list[ActorUser]):
+        errors = []
+        for actor in actors:
+            if not actor.is_active:
+                errors.append(f"{actor} is not active")
+            elif not actor.is_ready:
+                errors.append(f"{actor} is not ready")
+            elif actor.errors:
+                errors.append(f"{actor} has errors")
+            elif not actor.is_member(self.drain.get_id()):
+                errors.append(f"{actor} is not member of group")
+        return errors
+
     def start(self):
-        self.check_obj()
         if not self.is_ready:
             raise Exception("scene in not ready")
         for message in self.dialog.messages.order_by("start_time"):
@@ -107,7 +111,7 @@ class Scene(TimeStampedModel):
 class SceneRole(TimeStampedModel):
     scene = models.ForeignKey(Scene, on_delete=models.CASCADE, related_name="roles")
     name = models.CharField(max_length=255)
-    actor = models.ForeignKey(ActorUser, on_delete=models.CASCADE, related_name="roles")
+    actor = models.ForeignKey(ActorUser, on_delete=models.CASCADE, related_name="scene_roles")
 
     class Meta:
         constraints = [
