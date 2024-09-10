@@ -1,6 +1,6 @@
 from dal import autocomplete
 from telegram_groups.models import TelegramGroupSource
-from .models import ActorUser
+from .models import ActorUser, MemberUser
 
 
 class MemberAutocomplete(autocomplete.Select2QuerySetView):
@@ -8,8 +8,13 @@ class MemberAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_queryset(self):
         if telegram_group := self.forwarded.get("source"):
-            group = TelegramGroupSource.objects.get(id=telegram_group)
-            return group.members.all()
+            source = TelegramGroupSource.objects.get(id=telegram_group)
+            return source.members.exclude(
+                id__in=source.listeners.values_list(
+                    "id",
+                    flat=True,
+                )
+            )
         return []
 
 
