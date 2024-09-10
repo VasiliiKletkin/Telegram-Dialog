@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "telegram_clients",
     "djelethon",
-    "taggit",
+    "dialogs",
     "proxies",
     "roles",
     "imports",

@@ -52,6 +52,6 @@ class DialogAdminForm(forms.ModelForm):
     class Meta:
         model = Dialog
         fields = "__all__"
-        widgets = {
-            "tags": autocomplete.TaggitSelect2(url="tag-autocomplete"),
-        }
+        # widgets = {
+        #     "tags": autocomplete.TaggitSelect2(url="tag-autocomplete"),
+        # }

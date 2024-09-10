@@ -4,14 +4,14 @@ from django.db import models
 from django.forms import ValidationError
 from django.utils import timezone
 from model_utils.models import TimeStampedModel
-from taggit.managers import TaggableManager
-from telegram.models import TelegramGroup, TelegramUser, TelegramGroupMessage
+from telegram_groups.models import TelegramGroup
+from telegram_users.models import TelegramUser
+from telegram_messages.models import TelegramGroupMessage
 
 
 class Dialog(TimeStampedModel):
     is_active = models.BooleanField(default=False)
     name = models.CharField(max_length=255, db_index=True)
-    tags = TaggableManager(blank=True)
     telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateTimeField(default=timezone.now)
 

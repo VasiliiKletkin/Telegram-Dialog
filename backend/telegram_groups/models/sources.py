@@ -44,20 +44,16 @@ class TelegramGroupSource(BaseGroupModel):
         listeners: list[ListenerUser] = self.get_listeners()
         for listener in listeners:
             if not listener.is_member(self.id):
-                listener.join_chat(self.get_id())
+                listener.join_chat(self.get_id())  # FIXME with response from join chat
                 self.members.add(listener)
 
     def check_obj(self):
-        listeners: list[ListenerUser] = self.get_listeners()
         try:
-            errors = ""
-            for listener in listeners:
-                if not listener.is_member(self.id):
-                    errors += f"{listener} is not member of {self}"
-                    continue
-                listener.check_obj()
+            listeners = self.get_listeners()
+            errors = self._check_users(listeners)
             if errors:
-                raise Exception(errors)
+                raise ValidationError(errors)
+
         except Exception as e:
             self.errors = str(e)
         else:
@@ -65,6 +61,36 @@ class TelegramGroupSource(BaseGroupModel):
         finally:
             self.last_check = now()
             self.save()
+
+    def _check_users(self, users):
+        errors = ""
+        for user in users:
+            if not user.is_member(self.id):
+                errors += f"{user} is not member of {self}"
+                continue
+        if errors:
+            return errors
+
+        for user in users:
+            user.check_obj()
+
+        for user in users:
+            if not user.is_active:
+                errors += f"{user} is not active,"
+        if errors:
+            return errors
+
+        for user in users:
+            if user.errors:
+                errors += f"{user} has errors,"
+        if errors:
+            return errors
+
+        for user in users:
+            if not user.is_ready:
+                errors += f"{user} is not ready,"
+        if errors:
+            return errors
 
     def get_listener_user(self) -> ListenerUser:
         return self.listeners.first()

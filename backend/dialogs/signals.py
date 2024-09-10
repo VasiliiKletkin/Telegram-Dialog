@@ -2,7 +2,7 @@ import random
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from telegram.models import TelegramUser
+from telegram_users.models import TelegramUser
 from .models import Scene
 
 

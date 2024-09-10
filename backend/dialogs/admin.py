@@ -2,12 +2,12 @@ from dal_admin_filters import AutocompleteFilter
 from django.contrib import admin, messages
 from rangefilter.filters import DateTimeRangeFilter
 
-from .forms import (
-    DialogAdminForm,
-    MessageInlineAdminForm,
-    RoleInlineAdminForm,
-    SceneAdminForm,
-)
+# from .forms import (
+#     DialogAdminForm,
+#     MessageInlineAdminForm,
+#     RoleInlineAdminForm,
+#     SceneAdminForm,
+# )
 from .models import Dialog, Message, Role, Scene
 from .tasks import (
     check_scene,
@@ -36,7 +36,7 @@ class TelegramGroupFilterAdmin(AutocompleteFilter):
 
 
 class MessageInlineAdmin(admin.TabularInline):
-    form = MessageInlineAdminForm
+    # form = MessageInlineAdminForm
     model = Message
     extra = 1
     ordering = ["start_time"]
@@ -60,7 +60,7 @@ class DialogAdmin(admin.ModelAdmin):
         TelegramGroupFilterAdmin,
     ]
     inlines = [MessageInlineAdmin]
-    form = DialogAdminForm
+    # form = DialogAdminForm
     actions = [
         "generate_scenes",
     ]
@@ -75,7 +75,7 @@ class DialogAdmin(admin.ModelAdmin):
 
 
 class RoleInlineAdmin(admin.TabularInline):
-    form = RoleInlineAdminForm
+    # form = RoleInlineAdminForm
     model = Role
     extra = 1
 
@@ -99,7 +99,7 @@ class SceneAdmin(admin.ModelAdmin):
     ]
     inlines = [RoleInlineAdmin]
     actions = ["check_obj", "start", "join_to_chat_users", "create_tasks"]
-    form = SceneAdminForm
+    # form = SceneAdminForm
 
     def start(self, request, queryset):
         messages.add_message(request, messages.INFO, "Scenes starting now ...")

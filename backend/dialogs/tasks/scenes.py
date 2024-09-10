@@ -5,10 +5,11 @@ from django.utils import timezone
 from core.celery import app
 from django.utils import timezone
 from django_celery_beat.models import ClockedSchedule, PeriodicTask
-from telegram.models import TelegramGroup, TelegramUser
+from telegram_users.models import TelegramUser
+from telegram_groups.models import TelegramGroup
 import random
 from ..models import Scene, Dialog, Message
-from telegram.models import TelegramGroupMessage
+from telegram_messages.models import TelegramGroupMessage
 import json
 from datetime import timedelta
 from django.utils import timezone
@@ -17,10 +18,8 @@ from django.utils import timezone
 from core.celery import app
 from django.utils import timezone
 from django_celery_beat.models import ClockedSchedule, PeriodicTask
-from telegram.models import TelegramGroup, TelegramUser
 import random
 from ..models import Scene, Dialog, Message
-from telegram.models import TelegramGroupMessage
 
 
 @app.task()

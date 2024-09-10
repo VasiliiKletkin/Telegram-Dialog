@@ -27,6 +27,14 @@ class BaseClientUser(TelegramUser):
     def is_ready(self):
         return self.get_client().is_ready
 
+    @property
+    def is_active(self):
+        return self.get_client().is_active
+
+    @property
+    def errors(self):
+        return self.get_client().errors
+
     def is_member(self, group_id):
         return super().is_member(group_id)
 

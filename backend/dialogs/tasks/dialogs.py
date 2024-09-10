@@ -3,10 +3,9 @@ from datetime import timedelta
 from core.celery import app
 from dialogs.models import Dialog, Message, Scene
 from django.db.models import Count
-from taggit.models import Tag
 from telethon.errors import PhoneNumberBannedError
 
-from telegram.models import TelegramGroup
+from telegram_groups.models import TelegramGroup
 # from 
 # from .utils import (
 #     get_messages,
