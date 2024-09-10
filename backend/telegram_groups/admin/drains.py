@@ -1,7 +1,11 @@
 from ..models import TelegramGroupDrain
-from django.contrib import admin
+from django.contrib import admin, messages
+from .base import BaseTelegramGroupModelAdmin
 
 
 @admin.register(TelegramGroupDrain)
-class TelegramGroupDrainAdmin(admin.ModelAdmin):
-    pass
+class TelegramGroupDrainAdmin(BaseTelegramGroupModelAdmin):
+    actions = [
+        "save_messages",
+        "save_members",
+    ] + BaseTelegramGroupModelAdmin.actions

@@ -5,8 +5,8 @@ from telegram_users.models import TelegramUser
 
 class TelegramGroup(TimeStampedModel):
     id = models.BigIntegerField(primary_key=True)
-    groupname = models.CharField(max_length=32, unique=True)
     name = models.CharField(max_length=255)
+    groupname = models.CharField(max_length=32, unique=True)
     members = models.ManyToManyField(
         TelegramUser,
         related_name="groups",
@@ -19,6 +19,9 @@ class TelegramGroup(TimeStampedModel):
             models.Index(fields=["name"], name="name_idx"),
         ]
 
+    def get_id(self):
+        return -self.id
+
     def get_messages_count(self):
         return self.messages.count()
 
@@ -28,6 +31,5 @@ class TelegramGroup(TimeStampedModel):
     def __str__(self):
         return f"{self.name} - {self.get_groupname()}"
 
-    # def add_member(self, user:):
-    #     user.join_chat(self.id)
-    #     self.members.add(user)
+    def are_members(self, users):
+        return all(user.is_member(self.id) for user in users)

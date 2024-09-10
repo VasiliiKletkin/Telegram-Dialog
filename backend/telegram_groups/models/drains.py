@@ -1,8 +1,9 @@
 from .base import BaseGroupModel
 from django.db import models
 from .sources import TelegramGroupSource
+from django.utils.timezone import now
 
-# from actors.models import Actors
+from telegram_users.models import ActorUser
 
 
 class TelegramGroupDrain(BaseGroupModel):
@@ -11,31 +12,38 @@ class TelegramGroupDrain(BaseGroupModel):
     )
 
     def get_actors(self):
-        Actors.objects.filter(sources__in=self.sources.all())
-        self.sources
-
+        return ActorUser.objects.filter(actor_sources__in=self.sources.all())
 
     @property
     def is_ready(self):
-        for source in self.sources.all():
-            for actor in source.actors.all():
-                if not actor.is_member(self.id):
-                    return False
-        return True
+        return (
+            self.is_active
+            and not self.errors
+            and bool(self.last_check)
+            and self.are_members(self.get_actors())
+            and all(actor.is_ready for actor in self.get_actors())
+        )
+
+    def pre_check_obj(self):
+        for actor in self.get_actors():
+            if not actor.is_member(self.id):
+                actor.join_chat(self.get_id())
+                self.members.add(actor)
 
     def check_obj(self):
         try:
             errors = ""
-            for source in self.sources.all():
-                for actor in source.actors.all():
-                    if not actor.is_member(self.id):
-                        actor.check_obj()
-                        errors += f"{actor} is not member of {self},"
+            for actor in self.get_actors():
+                if not actor.is_member(self.id):
+                    errors += f"{actor} is not member of {self}"
             if errors:
-                raise Exception(f"Actors:{errors}")
+                raise Exception(errors)
+            for source in self.sources.all():
+                source.check_obj()
         except Exception as e:
             self.errors = str(e)
         else:
             self.errors = None
         finally:
+            self.last_check = now()
             self.save()

@@ -1,19 +1,23 @@
-from django.forms import ModelForm
-from dal import autocomplete, forward
+from django import forms
+from roles.models import TelegramGroupRole
+from dal import autocomplete
 
-from groups.models import TelegramGroup
 
-
-class TelegramGroupAdminForm(ModelForm):
+class TelegramGroupRoleAdminForm(forms.ModelForm):
     class Meta:
-        model = TelegramGroup
+        model = TelegramGroupRole
         fields = "__all__"
         widgets = {
-            "tags": autocomplete.TaggitSelect2(url="tag-autocomplete"),
-            "similar_groups": autocomplete.ModelSelect2Multiple(
-                url="telegram_group-autocomplete",
+            "member": autocomplete.ModelSelect2(
+                url="member-autocomplete",
                 forward=[
-                    forward.Const(False, "is_active"),
+                    "source",
+                ],
+            ),
+            "actor": autocomplete.ModelSelect2(
+                url="actor-autocomplete",
+                forward=[
+                    "source",
                 ],
             ),
         }

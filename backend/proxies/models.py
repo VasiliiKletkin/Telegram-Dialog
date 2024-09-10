@@ -9,7 +9,7 @@ class ProxyServer(TimeStampedModel):
 
     PROTOCOL_CHOICE = ((SOCKS5, "Socks5"), (SOCKS4, "Socks4"))
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
 
     protocol = models.CharField(
         max_length=10,

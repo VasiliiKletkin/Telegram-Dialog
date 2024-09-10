@@ -18,12 +18,14 @@ class TelegramClientAdmin(admin.ModelAdmin):
     list_display = (
         "__str__",
         "is_active",
+        "last_check",
+        "errors",
         "is_ready",
     )
     list_filter = [
         ("is_active", admin.BooleanFieldListFilter),
     ]
-    form = TelegramClientAdminForm
+    # form = TelegramClientAdminForm
 
     def check_obj(self, request, queryset):
         messages.add_message(request, messages.INFO, "Checking...")

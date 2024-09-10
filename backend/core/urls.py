@@ -23,6 +23,7 @@ urlpatterns = [
     # path("dialogs/", include("dialogs.urls")),
     # path("telegram/", include("telegram.urls")),
     # path("proxies/", include("proxies.urls")),
+    path("telegram_users/", include("telegram_users.urls")),
 ]
 
 if settings.DEBUG:

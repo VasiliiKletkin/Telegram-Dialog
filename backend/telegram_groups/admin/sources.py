@@ -1,48 +1,37 @@
 from django.contrib import admin, messages
-
 from ..models import TelegramGroupSource
 from roles.models import TelegramGroupRole
-
-# from tasks import save_messages_from_group
+from .base import BaseTelegramGroupModelAdmin
+from ..forms import TelegramGroupRoleAdminForm
 
 
 class TelegramGroupRoleInlineAdmin(admin.TabularInline):
+    form = TelegramGroupRoleAdminForm
     model = TelegramGroupRole
     extra = 1
 
 
 @admin.register(TelegramGroupSource)
-class TelegramGroupSourceAdmin(admin.ModelAdmin):
+class TelegramGroupSourceAdmin(BaseTelegramGroupModelAdmin):
     inlines = [TelegramGroupRoleInlineAdmin]
-    actions = ["save_messages", "check_obj", "pre_check_obj"]
-    list_display = (
-        "name",
-        "groupname",
-        "created",
-        "is_active",
-        "is_ready",
-    )
+    actions = [
+        "save_messages",
+        "save_members",
+    ] + BaseTelegramGroupModelAdmin.actions
 
-    def pre_check_obj(self, request, queryset):
-        messages.add_message(request, messages.INFO, "Pre Check...")
+    def save_messages(self, request, queryset):
+        messages.add_message(request, messages.INFO, "Saving messages...")
         for obj in queryset:
-            obj.pre_check_obj()
+            obj.save_messages()
 
-    pre_check_obj.short_description = "Pre Check"
+    save_messages.short_description = "Save messages"
 
-    def check_obj(self, request, queryset):
-        messages.add_message(request, messages.INFO, "Checking...")
+    def save_members(self, request, queryset):
+        messages.add_message(request, messages.INFO, "Saving members...")
         for obj in queryset:
-            obj.check_obj()
-    check_obj.short_description = "Check"
+            obj.save_members()
 
-    # def save_messages(self, request, queryset):
-    #     messages.add_message(request, messages.INFO, "Saving messages...")
-    #     for obj in queryset:
-    #         pass
-    #         # save_messages_from_group.delay(obj.id)
-
-    # save_messages.short_description = "Save messages from group"
+    save_members.short_description = "Save members"
 
     # def generate_dialogs(self, request, queryset):
     #     messages.add_message(request, messages.INFO, "Generate dialogs from group...")

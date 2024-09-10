@@ -1,21 +1,9 @@
 from .base import BaseClientUser
-from django.db import models
-
-
-class ActorManager(models.Manager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(
-                client__isnull=False,
-                client__is_active=True,
-            )
-        )
 
 
 class ActorUser(BaseClientUser):
-    objects = ActorManager()
-
     class Meta:
         proxy = True
+
+    def send_message(self, chat_id, text):
+        return self.get_client().send_message(chat_id=chat_id, text=text)

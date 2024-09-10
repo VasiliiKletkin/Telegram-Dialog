@@ -6,7 +6,7 @@ from telegram_users.models import ActorUser, MemberUser
 
 
 class TelegramGroupRole(TimeStampedModel):
-    group = models.ForeignKey(
+    source = models.ForeignKey(
         TelegramGroupSource,
         on_delete=models.CASCADE,
         related_name="roles",
@@ -24,19 +24,21 @@ class TelegramGroupRole(TimeStampedModel):
 
     def clean(self) -> None:
         super().clean()
-        if not self.member.is_member(self.group.id):
+        if not self.member.is_member(self.source.id):
             raise ValidationError("Member must be member of the group")
         if self.member == self.actor:
             raise ValidationError("Member must not be equal actor")
+        if self.source.listeners.filter(id=self.member.id).exists():
+            raise ValidationError("Listener must not be member of the group")
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["group", "member"],
+                fields=["source", "member"],
                 name="group_member_unique",
             ),
             models.UniqueConstraint(
-                fields=["group", "actor"],
-                name="group_actor_unique",
+                fields=["source", "actor"],
+                name="source_actor_unique",
             ),
         ]

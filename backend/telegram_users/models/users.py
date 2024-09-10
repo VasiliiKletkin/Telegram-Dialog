@@ -26,6 +26,9 @@ class TelegramUser(TimeStampedModel):
             models.Index(fields=["last_name"], name="last_name_idx"),
         ]
 
+    def get_id(self):
+        return self.id
+
     def is_member(self, group_id):
         return self.groups.filter(id=group_id).exists()
 
@@ -33,4 +36,4 @@ class TelegramUser(TimeStampedModel):
         return f"@{self.username}" if self.username else None
 
     def __str__(self):
-        return f"id:{self.id}-{self.get_username()}-{self.first_name} {self.last_name}"
+        return f"{self.get_id()}-{self.first_name} {self.last_name}-{self.get_username()}"
