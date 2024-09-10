@@ -20,13 +20,15 @@ class TelegramGroupDrain(BaseGroupModel):
             self.is_active
             and not self.errors
             and bool(self.last_check)
-            and self.are_members(self.get_actors())
-            and all(actor.is_ready for actor in self.get_actors())
+            and all(
+                actor.is_ready and actor.is_member(self.get_id())
+                for actor in self.get_actors()
+            )
         )
 
     def pre_check_obj(self):
         for actor in self.get_actors():
-            if not actor.is_member(self.id):
+            if not actor.is_member(self.get_id()):
                 actor.join_chat(self.get_id())
                 self.members.add(actor)
 
@@ -48,7 +50,7 @@ class TelegramGroupDrain(BaseGroupModel):
     def _check_users(self, users):
         errors = ""
         for user in users:
-            if not user.is_member(self.id):
+            if not user.is_member(self.get_id()):
                 errors += f"{user} is not member of {self}/n"
         if errors:
             return errors

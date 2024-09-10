@@ -30,6 +30,3 @@ class TelegramGroup(TimeStampedModel):
 
     def __str__(self):
         return f"{self.name} - {self.get_groupname()}"
-
-    def are_members(self, users):
-        return all(user.is_member(self.id) for user in users)

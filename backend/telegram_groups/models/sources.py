@@ -30,8 +30,10 @@ class TelegramGroupSource(BaseGroupModel):
             self.is_active
             and not self.errors
             and bool(self.last_check)
-            and self.are_members(self.get_listeners())
-            and all(listener.is_member(self.id) for listener in self.get_listeners())
+            and all(
+                listener.is_ready and listener.is_member(self.get_id())
+                for listener in self.get_listeners()
+            )
         )
 
     def get_actors(self) -> list[ActorUser]:
@@ -43,7 +45,7 @@ class TelegramGroupSource(BaseGroupModel):
     def pre_check_obj(self):
         listeners: list[ListenerUser] = self.get_listeners()
         for listener in listeners:
-            if not listener.is_member(self.id):
+            if not listener.is_member(self.get_id()):
                 listener.join_chat(self.get_id())  # FIXME with response from join chat
                 self.members.add(listener)
 
@@ -62,10 +64,10 @@ class TelegramGroupSource(BaseGroupModel):
             self.last_check = now()
             self.save()
 
-    def _check_users(self, users):
+    def _check_users(self, users: list[ListenerUser]):
         errors = ""
         for user in users:
-            if not user.is_member(self.id):
+            if not user.is_member(self.get_id()):
                 errors += f"{user} is not member of {self}"
                 continue
         if errors:

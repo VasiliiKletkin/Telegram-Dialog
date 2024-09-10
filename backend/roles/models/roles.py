@@ -24,7 +24,7 @@ class TelegramGroupRole(TimeStampedModel):
 
     def clean(self) -> None:
         super().clean()
-        if not self.member.is_member(self.source.id):
+        if not self.member.is_member(self.source.get_id()):
             raise ValidationError("Member must be member of the group")
         if self.member == self.actor:
             raise ValidationError("Member must not be equal actor")

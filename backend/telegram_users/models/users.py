@@ -30,7 +30,7 @@ class TelegramUser(TimeStampedModel):
         return self.id
 
     def is_member(self, group_id):
-        return self.groups.filter(id=group_id).exists()
+        return self.groups.filter(id=abs(group_id)).exists()
 
     def get_username(self):
         return f"@{self.username}" if self.username else None

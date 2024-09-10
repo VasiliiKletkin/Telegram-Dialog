@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from core.celery import app
-from dialogs.models import Dialog, Message, Scene
+from dialogs.models import Dialog, DialogMessage, Scene
 from django.db.models import Count
 from telethon.errors import PhoneNumberBannedError
 
