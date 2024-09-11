@@ -1,5 +1,6 @@
 from datetime import timedelta
 import json
+import random
 from typing import List
 from django.db import models
 from django.forms import ValidationError
@@ -61,53 +62,47 @@ class Scene(TimeStampedModel):
         return ActorUser.objects.filter(scene_roles__in=self.roles.all()).distinct()
 
     def pre_check_obj(self):
-        for actor in self.actors():
+        self.create_random_roles()
+        for actor in self.actors:
             if not actor.is_member(self.drain.get_id()):
                 actor.join_chat(self.drain.get_id())
                 self.drain.members.add(actor)
 
     def check_obj(self):
-        actors = self.actors()
         try:
             if self.roles_count != self.dialog.roles_count:
                 raise Exception(
-                    "Count of roles of Dialog are not equal count of roles of scene"
+                    f"Count of roles in scene {self.roles_count} != count of roles in dialog {self.dialog.roles_count}"
                 )
             for role_name in self.dialog.role_names:
                 if role_name not in self.role_names:
                     raise Exception(f"Role {role_name} not in scene")
 
-            errors = self._check_users(actors)
-            if errors:
+            if errors := self._check_users(self.actors):
                 raise Exception(errors)
-        except Exception as error:
-            self.error = str(error)
+        except Exception as errors:
+            self.errors = str(errors)
         else:
-            self.error = None
+            self.errors = None
         finally:
             self.last_check = now()
             self.save()
 
     def _check_users(self, users: list[ActorUser]):
-        errors = []
-        for user in users:
-            if not user.is_active:
-                errors.append(f"{user} is not active")
+        errors = [f"{user} is not active" for user in users if not user.is_active]
         if errors:
             return errors
-        for user in users:
-            if not user.is_ready:
-                errors.append(f"{user} is not ready")
+        errors.extend(f"{user} is not ready" for user in users if not user.is_ready)
         if errors:
             return errors
-        for user in users:
-            if user.errors:
-                errors.append(f"{user} has errors")
+        errors.extend(f"{user} has errors" for user in users if user.errors)
         if errors:
             return errors
-        for user in users:
-            if not user.is_member(self.drain.get_id()):
-                errors.append(f"{user} is not member of group")
+        errors.extend(
+            f"{user} is not member of group"
+            for user in users
+            if not user.is_member(self.drain.get_id())
+        )
         if errors:
             return errors
 
@@ -188,6 +183,27 @@ class Scene(TimeStampedModel):
                 ]
             ),
         )
+
+    def create_random_roles(self):
+        if self.roles_count < self.dialog.roles_count:
+            for _ in range(self.dialog.roles_count - self.roles_count):
+                available_actors = ActorUser.active.exclude(
+                    id__in=self.actors.values_list("id", flat=True)
+                )
+                if not available_actors:
+                    actors_count = ActorUser.active.count()
+                    raise RuntimeError(
+                        f"We have only {actors_count} actors, but in dialog {self.dialog.roles_count} roles"
+                    )
+                available_name_roles = [
+                    role_name
+                    for role_name in self.dialog.role_names
+                    if role_name not in self.role_names
+                ]
+                self.roles.create(
+                    actor=random.choice(available_actors),
+                    name=random.choice(available_name_roles),
+                )
 
     def clean(self) -> None:
         super().clean()
