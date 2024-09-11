@@ -8,6 +8,12 @@ def send_message_from_scene(scene_id, message_id):
     scene.send_message(message_id)
 
 
+@app.task()
+def start_scene(scene_id):
+    scene = Scene.objects.get(id=scene_id)
+    scene.start()
+
+
 # @app.task()
 # def create_periodic_task_from_scene(scene_id):
 #     scene = Scene.objects.get(id=scene_id)

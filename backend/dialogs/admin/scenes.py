@@ -70,8 +70,8 @@ class SceneAdmin(admin.ModelAdmin):
     actions = [
         "pre_check_obj",
         "check_obj",
-        "start_now",
-        "start_on_time",
+        "start",
+        "create_scheduled_task",
     ]
 
     def pre_check_obj(self, request, queryset: list[Scene]):
@@ -88,17 +88,16 @@ class SceneAdmin(admin.ModelAdmin):
 
     check_obj.short_description = "Check"
 
-    def start_now(self, request, queryset: list[Scene]):
+    def start(self, request, queryset: list[Scene]):
         messages.add_message(request, messages.INFO, "Starting ...")
         for obj in queryset:
             obj.start()
 
-    start_now.short_description = "Start"
+    start.short_description = "Start"
 
-    def start_on_time(self, request, queryset: list[Scene]):
+    def create_scheduled_task(self, request, queryset: list[Scene]):
         messages.add_message(request, messages.INFO, "Create tasks...")
         for obj in queryset:
-            pass
-            # (obj.id)
+            obj.create_scheduled_task()
 
-    start_on_time.short_description = "Start on time"
+    create_scheduled_task.short_description = "Create task"
