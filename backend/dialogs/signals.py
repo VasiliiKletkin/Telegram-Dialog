@@ -2,39 +2,27 @@ import random
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from telegram_users.models import TelegramUser
+from telegram_users.models import ActorUser
 from .models import Scene
 
 
 @receiver(post_save, sender=Scene)
 def post_save_scene(sender, instance: Scene, created, **kwargs):
-    return None
-    # if instance.roles_count < instance.dialog.roles_count:
-    #     for _ in range(instance.dialog.roles_count - instance.roles_count):
-    #         available_users_id = (
-    #             TelegramUser.objects.filter(is_active=True)
-    #             .exclude(
-    #                 id__in=instance.roles.values_list("telegram_user_id", flat=True)
-    #             )
-    #             .values_list("id", flat=True)
-    #         )
-    #         if not available_users_id:
-    #             available_users_count = TelegramUser.objects.filter(
-    #                 is_active=True
-    #             ).count()
-    #             raise RuntimeError(
-    #                 f"We have only {available_users_count} users, but in dialog {instance.dialog.roles_count} roles"
-    #             )
+    if instance.roles_count < instance.dialog.roles_count:
 
-    #         available_name_roles = (
-    #             instance.dialog.messages.exclude(
-    #                 role_name__in=instance.roles.values_list("name", flat=True)
-    #             )
-    #             .values_list("role_name", flat=True)
-    #             .distinct()
-    #         )
+        for _ in range(instance.dialog.roles_count - instance.roles_count):
 
-    #         instance.roles.create(
-    #             telegram_user_id=random.choice(available_users_id),
-    #             name=random.choice(available_name_roles),
-    #         )
+            available_actors = ActorUser.active.exclude(
+                id__in=instance.actors.values_list("id", flat=True)
+            )
+
+            if not available_actors:
+                actors_count = ActorUser.active.count()
+                raise RuntimeError(
+                    f"We have only {actors_count} actors, but in dialog {instance.dialog.roles_count} roles"
+                )
+            available_name_roles = instance.dialog.role_names(role_name__in=instance.role_names)
+            instance.roles.create(
+                actor=random.choice(available_actors),
+                name=random.choice(available_name_roles),
+            )

@@ -152,40 +152,40 @@ class TelegramGroupSource(BaseGroupModel):
             )
             self.members.add(member)
 
-    def create_roles_with_available_actors(self):
-        roles = self.roles.all()
-        available_actors = ActorUser.objects.exclude(actor_roles__in=roles)
-        members = self.members.all()
+    # def create_roles_with_available_actors(self):
+    #     roles = self.roles.all()
+    #     available_actors = ActorUser.objects.exclude(actor_roles__in=roles)
+    #     members = self.members.all()
 
-        if members.count() < available_actors.count():
-            raise ValidationError(
-                f"Available actors{available_actors.count()} more than members{members.count()}"
-            )
-        for index, member in enumerate(members):
-            roles.create(member=member, actor=available_actors[index])
+    #     if members.count() < available_actors.count():
+    #         raise ValidationError(
+    #             f"Available actors{available_actors.count()} more than members{members.count()}"
+    #         )
+    #     for index, member in enumerate(members):
+    #         roles.create(member=member, actor=available_actors[index])
 
-    def update_roles(self):
-        self.create_roles_with_available_actors()
-        roles = self.roles.all()
-        end_date = now()
-        start_date = end_date - timedelta(days=7)
-        members = (
-            self.members.annotate(
-                messages_count=models.Count(
-                    "messages",
-                    filter=models.Q(messages__date__range=(start_date, end_date)),
-                )
-            )
-            .order_by("messages_count")
-            .filter(messages_count__gt=0)
-        )
+    # def update_roles(self):
+    #     self.create_roles_with_available_actors()
+    #     roles = self.roles.all()
+    #     end_date = now()
+    #     start_date = end_date - timedelta(days=7)
+    #     members = (
+    #         self.members.annotate(
+    #             messages_count=models.Count(
+    #                 "messages",
+    #                 filter=models.Q(messages__date__range=(start_date, end_date)),
+    #             )
+    #         )
+    #         .order_by("messages_count")
+    #         .filter(messages_count__gt=0)
+    #     )
 
-        members_without_roles = members.filter(member_roles__isnull=True)
-        unusable_roles = roles.exclude(member__in=members).order_by("-modified")
+    #     members_without_roles = members.filter(member_roles__isnull=True)
+    #     unusable_roles = roles.exclude(member__in=members).order_by("-modified")
 
-        if members_without_roles.count() > unusable_roles.count():
-            raise ValidationError(
-                f"Active members{members_without_roles.count()} more than available roles{unusable_roles.count()}"
-            )
-        for index, member in enumerate(members_without_roles):
-            unusable_roles[index].update(member=member)
+    #     if members_without_roles.count() > unusable_roles.count():
+    #         raise ValidationError(
+    #             f"Active members{members_without_roles.count()} more than available roles{unusable_roles.count()}"
+    #         )
+    #     for index, member in enumerate(members_without_roles):
+    #         unusable_roles[index].update(member=member)

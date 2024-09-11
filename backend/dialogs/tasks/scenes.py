@@ -13,26 +13,6 @@ def start_scene(scene_id):
     scene = Scene.objects.get(id=scene_id)
     scene.start()
 
-
-# @app.task()
-# def create_periodic_task_from_scene(scene_id):
-#     scene = Scene.objects.get(id=scene_id)
-
-#     start_time_str = scene.start_date.strftime("%d-%b-%Y:%H:%M:%S")
-#     clocked_schedule = ClockedSchedule.objects.create(clocked_time=scene.start_date)
-#     task_name = f"Start scene id:{scene.id}, time:{start_time_str}, group:{scene.telegram_group.username}, dialog:{scene.dialog.name},"
-#     PeriodicTask.objects.get_or_create(
-#         name=task_name[:200],
-#         defaults={
-#             "clocked": clocked_schedule,
-#             "enabled": scene.is_active,
-#             "one_off": True,
-#             "task": "dialogs.tasks.start_scene",
-#             "args": json.dumps([scene.id]),
-#         },
-#     )
-
-
 # @app.task()
 # def generate_scenes_from_dialog(dialog_id):
 #     dialog = Dialog.objects.get(id=dialog_id)

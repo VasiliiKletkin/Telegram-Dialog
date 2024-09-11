@@ -27,8 +27,12 @@ class Dialog(TimeStampedModel):
     def messages_count(self):
         return self.messages.count()
 
-    def get_roles_list(self):
-        return self.messages.values_list("role_name").distinct()
+    @property
+    def role_names(self):
+        return self.messages.values_list("role_name", flat=True).distinct()
+
+    def is_role_exist(self, role_name):
+        return self.messages.filter(role_name=role_name).exists()
 
 
 class DialogMessage(TimeStampedModel):

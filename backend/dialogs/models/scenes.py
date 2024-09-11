@@ -2,6 +2,7 @@ from datetime import timedelta
 import json
 from typing import List
 from django.db import models
+from django.forms import ValidationError
 from django.utils.timezone import now
 from model_utils.models import TimeStampedModel
 from telegram_messages.models import TelegramGroupMessage
@@ -36,35 +37,47 @@ class Scene(TimeStampedModel):
         return (
             self.is_active
             and not self.errors
-            and self.roles_count == self.dialog.roles_count
             and bool(self.last_check)
             and all(
                 actor.is_ready and actor.is_member(self.drain.get_id())
-                for actor in self.get_actors()
+                for actor in self.actors
+            )
+            and self.roles_count == self.dialog.roles_count
+            and all(
+                role_name in self.role_names for role_name in self.dialog.role_names
             )
         )
-
-    def get_actors(self):
-        return ActorUser.objects.filter(scene_roles__in=self.roles.all()).distinct()
 
     @property
     def roles_count(self):
         return self.roles.count()
 
+    @property
+    def role_names(self):
+        return self.roles.values_list("name", flat=True).distinct()
+
+    @property
+    def actors(self):
+        return ActorUser.objects.filter(scene_roles__in=self.roles.all()).distinct()
+
     def pre_check_obj(self):
-        for actor in self.get_actors():
+        for actor in self.actors():
             if not actor.is_member(self.drain.get_id()):
                 actor.join_chat(self.drain.get_id())
                 self.drain.members.add(actor)
 
     def check_obj(self):
-        actors = self.get_actors()
+        actors = self.actors()
         try:
             if self.roles_count != self.dialog.roles_count:
                 raise Exception(
                     "Count of roles of Dialog are not equal count of roles of scene"
                 )
-            errors = self._check_errors(actors)
+            for role_name in self.dialog.role_names:
+                if role_name not in self.role_names:
+                    raise Exception(f"Role {role_name} not in scene")
+
+            errors = self._check_users(actors)
             if errors:
                 raise Exception(errors)
         except Exception as error:
@@ -97,9 +110,6 @@ class Scene(TimeStampedModel):
                 errors.append(f"{user} is not member of group")
         if errors:
             return errors
-
-    def get_role(self, role_name):
-        return self.roles.get(name=role_name)
 
     def start(self):
         if not self.is_ready:
@@ -179,6 +189,11 @@ class Scene(TimeStampedModel):
             ),
         )
 
+    def clean(self) -> None:
+        super().clean()
+        if self.roles_count > self.dialog.roles_count:
+            raise ValidationError("Count of roles in scene is more than in dialog")
+
 
 class SceneRole(TimeStampedModel):
     scene = models.ForeignKey(Scene, on_delete=models.CASCADE, related_name="roles")
@@ -190,9 +205,13 @@ class SceneRole(TimeStampedModel):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["scene", "name", "actor"],
-                name="scene_name_actor_unique",
-            )
+                fields=["scene", "name"],
+                name="scene_name_unique",
+            ),
+            models.UniqueConstraint(
+                fields=["scene", "actor"],
+                name="scene_actor_unique",
+            ),
         ]
         indexes = [
             models.Index(fields=["name"], name="scene_role_name_idx"),
@@ -200,3 +219,8 @@ class SceneRole(TimeStampedModel):
 
     def __str__(self):
         return f"role:{self.name}, actor:{self.actor}"
+
+    def clean(self) -> None:
+        super().clean()
+        if not self.scene.dialog.is_role_exist(self.name):
+            raise ValidationError(f"role {self.name} not exist in dialog")
