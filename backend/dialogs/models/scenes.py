@@ -116,7 +116,9 @@ class Scene(TimeStampedModel):
             clocked_schedule = ClockedSchedule.objects.create(clocked_time=target_time)
             PeriodicTask.objects.create(
                 clocked=clocked_schedule,
-                name=f"Send message, id:{message.id}, time:{target_time_str}, user:{role.actor.get_id()}, group:{self.drain.get_id()},  message:{message.text[:10]}",
+                name=f"Send message, id:{message.id}, time:{target_time_str}, user:{role.actor.get_id()}, group:{self.drain.get_id()},  message:{message.text[:10]}"[
+                    :200
+                ],
                 one_off=True,
                 task="dialogs.tasks.scenes.send_message_from_scene",
                 args=json.dumps(
@@ -160,6 +162,23 @@ class Scene(TimeStampedModel):
             reply_to_msg=reply_to_msg,
         )
 
+    def create_scheduled_task(self):
+        start_time_str = self.start_date.strftime("%d-%b-%Y:%H:%M:%S")
+        clocked_schedule = ClockedSchedule.objects.create(clocked_time=self.start_date)
+        PeriodicTask.objects.create(
+            name=f"Start scene id:{self.id}, time:{start_time_str}, group:{self.drain.get_groupname()}, dialog:{self.dialog.name},"[
+                :200
+            ],
+            clocked=clocked_schedule,
+            one_off=True,
+            task="dialogs.tasks.scenes.start_scene",
+            args=json.dumps(
+                [
+                    self.id,
+                ]
+            ),
+        )
+
 
 class SceneRole(TimeStampedModel):
     scene = models.ForeignKey(Scene, on_delete=models.CASCADE, related_name="roles")
@@ -176,7 +195,7 @@ class SceneRole(TimeStampedModel):
             )
         ]
         indexes = [
-            # models.Index(fields=["name"], name="name_idx"),
+            models.Index(fields=["name"], name="scene_role_name_idx"),
         ]
 
     def __str__(self):
