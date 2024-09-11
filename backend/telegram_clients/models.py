@@ -23,6 +23,7 @@ class TelegramClient(models.Model):
     is_active = models.BooleanField(default=False)
     last_check = models.DateTimeField(null=True, blank=True)
     errors = models.TextField(null=True, blank=True)
+    is_listener = models.BooleanField(default=False)
     app = models.ForeignKey(App, on_delete=models.CASCADE)
     session = models.OneToOneField(ClientSession, on_delete=models.CASCADE)
     two_fa = models.CharField(max_length=30)

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import MessageRoleNameAutocomplete, MessageAutocomplete, DialogAutocomplete
+from .views import MessageRoleNameAutocomplete, DialogMessageAutocomplete, DialogAutocomplete
 
 urlpatterns = [
     path(
@@ -10,12 +10,12 @@ urlpatterns = [
     ),
     path(
         "reply_to_msg-autocomplete/",
-        MessageAutocomplete.as_view(),
+        DialogMessageAutocomplete.as_view(),
         name="reply_to_msg-autocomplete",
     ),
     path(
         "dialog-autocomplete/",
         DialogAutocomplete.as_view(),
         name="dialog-autocomplete",
-    )
+    ),
 ]

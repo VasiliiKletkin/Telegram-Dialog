@@ -54,7 +54,7 @@ class TelegramGroupSource(BaseGroupModel):
             listeners = self.get_listeners()
             errors = self._check_users(listeners)
             if errors:
-                raise ValidationError(errors)
+                raise Exception(errors)
 
         except Exception as e:
             self.errors = str(e)
@@ -65,11 +65,10 @@ class TelegramGroupSource(BaseGroupModel):
             self.save()
 
     def _check_users(self, users: list[ListenerUser]):
-        errors = ""
+        errors = []
         for user in users:
             if not user.is_member(self.get_id()):
-                errors += f"{user} is not member of {self}"
-                continue
+                errors.append(f"{user} is not member of {self}")
         if errors:
             return errors
 
@@ -78,19 +77,19 @@ class TelegramGroupSource(BaseGroupModel):
 
         for user in users:
             if not user.is_active:
-                errors += f"{user} is not active,"
+                errors.append(f"{user} is not active")
         if errors:
             return errors
 
         for user in users:
             if user.errors:
-                errors += f"{user} has errors,"
+                errors.append(f"{user} has errors")
         if errors:
             return errors
 
         for user in users:
             if not user.is_ready:
-                errors += f"{user} is not ready,"
+                errors.append(f"{user} is not ready")
         if errors:
             return errors
 

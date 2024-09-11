@@ -9,13 +9,18 @@ class BaseClientUserManager(models.Manager):
             .get_queryset()
             .filter(
                 client__isnull=False,
-                client__is_active=True,
             )
         )
 
 
+class ActiveClientUserManager(BaseClientUserManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(client__is_active=True)
+
+
 class BaseClientUser(TelegramUser):
     objects = BaseClientUserManager()
+    active = ActiveClientUserManager()
 
     class Meta:
         proxy = True

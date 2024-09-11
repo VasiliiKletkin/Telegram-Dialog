@@ -9,7 +9,7 @@ class MessageInlineAdmin(admin.TabularInline):
     form = DialogMessageInlineAdminForm
     model = DialogMessage
     extra = 1
-    ordering = ["start_time"]
+    ordering = ["delay"]
 
 
 @admin.register(Dialog)

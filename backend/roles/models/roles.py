@@ -26,10 +26,12 @@ class TelegramGroupRole(TimeStampedModel):
         super().clean()
         if not self.member.is_member(self.source.get_id()):
             raise ValidationError("Member must be member of the group")
-        if self.member == self.actor:
+        if self.member.id == self.actor.id:
             raise ValidationError("Member must not be equal actor")
         if self.source.listeners.filter(id=self.member.id).exists():
-            raise ValidationError("Listener must not be member of the group")
+            raise ValidationError("Member must not be listener of the group")
+        if self.source.actors.filter(id=self.member.id).exists():
+            raise ValidationError("Member must not be actor of the group")
 
     class Meta:
         constraints = [

@@ -7,27 +7,12 @@ class MemberAutocomplete(autocomplete.Select2QuerySetView):
     search_fields = ["username", "id"]
 
     def get_queryset(self):
-        if telegram_group := self.forwarded.get("source"):
-            source = TelegramGroupSource.objects.get(id=telegram_group)
-            return source.members.exclude(
-                id__in=source.listeners.values_list(
-                    "id",
-                    flat=True,
-                )
-            )
+        if group_id := self.forwarded.get("group"):
+            group = TelegramGroupSource.objects.get(id=group_id)
+            return group.members.all()
         return []
 
 
 class ActorAutocomplete(autocomplete.Select2QuerySetView):
     search_fields = ["username", "id"]
-
-    def get_queryset(self):
-        if telegram_group := self.forwarded.get("source"):
-            source = TelegramGroupSource.objects.get(id=telegram_group)
-            return ActorUser.objects.exclude(
-                id__in=source.listeners.values_list(
-                    "id",
-                    flat=True,
-                )
-            )
-        return []
+    queryset = ActorUser.active.all()

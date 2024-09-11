@@ -44,11 +44,11 @@ class SceneRoleInlineAdmin(admin.TabularInline):
 class SceneAdmin(admin.ModelAdmin):
     inlines = [SceneRoleInlineAdmin]
     form = SceneAdminForm
-
     list_display = (
         "dialog",
         "drain",
         "start_date",
+        "last_check",
         "is_active",
         "is_ready",
     )
@@ -68,10 +68,10 @@ class SceneAdmin(admin.ModelAdmin):
         ("start_date", DateTimeRangeFilter),
     ]
     actions = [
+        "pre_check_obj",
         "check_obj",
-        "start",
-        "join_to_chat_users",
-        "create_tasks",
+        "start_now",
+        "start_on_time",
     ]
 
     def pre_check_obj(self, request, queryset: list[Scene]):
@@ -88,17 +88,17 @@ class SceneAdmin(admin.ModelAdmin):
 
     check_obj.short_description = "Check"
 
-    def start(self, request, queryset: list[Scene]):
+    def start_now(self, request, queryset: list[Scene]):
         messages.add_message(request, messages.INFO, "Starting ...")
         for obj in queryset:
             obj.start()
 
-    start.short_description = "Start"
+    start_now.short_description = "Start"
 
-    def create_tasks(self, request, queryset: list[Scene]):
+    def start_on_time(self, request, queryset: list[Scene]):
         messages.add_message(request, messages.INFO, "Create tasks...")
         for obj in queryset:
             pass
             # (obj.id)
 
-    create_tasks.short_description = "Start with delay"
+    start_on_time.short_description = "Start on time"

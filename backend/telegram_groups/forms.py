@@ -1,6 +1,6 @@
 from django import forms
 from roles.models import TelegramGroupRole
-from dal import autocomplete
+from dal import autocomplete, forward
 
 
 class TelegramGroupRoleAdminForm(forms.ModelForm):
@@ -10,14 +10,9 @@ class TelegramGroupRoleAdminForm(forms.ModelForm):
         widgets = {
             "member": autocomplete.ModelSelect2(
                 url="member-autocomplete",
-                forward=[
-                    "source",
-                ],
+                forward=[forward.Field("source", "group")],
             ),
             "actor": autocomplete.ModelSelect2(
                 url="actor-autocomplete",
-                forward=[
-                    "source",
-                ],
             ),
         }

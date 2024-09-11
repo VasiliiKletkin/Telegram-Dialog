@@ -18,7 +18,7 @@ class MessageRoleNameAutocomplete(autocomplete.Select2ListView):
         return []
 
 
-class MessageAutocomplete(autocomplete.Select2QuerySetView):
+class DialogMessageAutocomplete(autocomplete.Select2QuerySetView):
     queryset = DialogMessage.objects.all()
     search_fields = ["text", "id"]
 

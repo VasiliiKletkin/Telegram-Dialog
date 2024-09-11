@@ -39,7 +39,7 @@ class DialogMessage(TimeStampedModel):
     )
     role_name = models.CharField(max_length=255)
     text = models.TextField()
-    start_time = models.TimeField(default=time(0))
+    delay = models.TimeField(default=time(0))
     reply_to_msg = models.ForeignKey(
         "self",
         on_delete=models.CASCADE,
@@ -59,6 +59,6 @@ class DialogMessage(TimeStampedModel):
     def clean(self) -> None:
         if self.reply_to_msg and self.reply_to_msg.dialog != self.dialog:
             raise ValidationError("reply_to_msg link on different dialog")
-        if self.reply_to_msg.id == self.id:
+        if self.reply_to_msg == self:
             raise ValidationError("reply_to_msg link to it self")
         return super().clean()

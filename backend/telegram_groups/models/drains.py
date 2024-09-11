@@ -47,11 +47,11 @@ class TelegramGroupDrain(BaseGroupModel):
             self.save()
 
     # TODO Rename this here and in `check_obj`
-    def _check_users(self, users):
-        errors = ""
+    def _check_users(self, users: list[ActorUser]):
+        errors = []
         for user in users:
             if not user.is_member(self.get_id()):
-                errors += f"{user} is not member of {self}/n"
+                errors.append(f"{user} is not member of {self}")
         if errors:
             return errors
 
@@ -60,18 +60,18 @@ class TelegramGroupDrain(BaseGroupModel):
 
         for user in users:
             if not user.is_active:
-                errors += f"{user} is not active/n"
+                errors.append(f"{user} is not active")
         if errors:
             return errors
 
         for user in users:
             if user.errors:
-                errors += f"{user} has errors/n"
+                errors.append(f"{user} has errors")
         if errors:
             return errors
 
         for user in users:
             if not user.is_ready:
-                errors += f"{user} is not ready/n"
+                errors.append(f"{user} is not ready")
         if errors:
             return errors

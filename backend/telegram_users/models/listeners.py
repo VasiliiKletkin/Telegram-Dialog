@@ -1,7 +1,20 @@
-from .base import BaseClientUser
+from .base import BaseClientUser, BaseClientUserManager
+from django.db import models
+
+
+class ListenerUserManager(BaseClientUserManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(client__is_listener=True)
+
+
+class ActiveListenerUserManager(ListenerUserManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(client__is_listener=True)
 
 
 class ListenerUser(BaseClientUser):
+    objects = ListenerUserManager()
+    active = ActiveListenerUserManager()
 
     def get_participants(self, chat_id, limit=1000):
         return self.get_client().get_participants(chat_id=chat_id, limit=limit)

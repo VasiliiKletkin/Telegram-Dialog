@@ -19,8 +19,8 @@ class SceneRoleInlineAdminForm(forms.ModelForm):
         model = SceneRole
         fields = "__all__"
         widgets = {
-            "telegram_user": autocomplete.ModelSelect2(
-                url="telegram_user-autocomplete"
+            "actor": autocomplete.ModelSelect2(
+                url="actor-autocomplete"
             ),
         }
 
@@ -42,8 +42,8 @@ class SceneAdminForm(forms.ModelForm):
         model = Scene
         fields = "__all__"
         widgets = {
-            "telegram_group": autocomplete.ModelSelect2(
-                url="telegram_group-autocomplete"
+            "drain": autocomplete.ModelSelect2(
+                url="drain-autocomplete"
             ),
             "dialog": autocomplete.ModelSelect2(
                 url="dialog-autocomplete",
