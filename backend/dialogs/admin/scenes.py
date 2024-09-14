@@ -48,7 +48,6 @@ class SceneAdmin(admin.ModelAdmin):
         "dialog",
         "drain",
         "start_date",
-        "last_check",
         "is_active",
         "is_ready",
     )

@@ -17,7 +17,9 @@ class Dialog(TimeStampedModel):
         ]
 
     def __str__(self):
-        return f"{self.name[:50]}-{self.roles_count} roles"
+        return (
+            f"{self.name[:50]}-{self.roles_count} roles-{self.messages_count} messages"
+        )
 
     @property
     def roles_count(self):

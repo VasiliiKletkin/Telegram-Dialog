@@ -5,14 +5,6 @@ from dialogs.models import Dialog, DialogMessage, Scene
 from django.db.models import Count
 from telethon.errors import PhoneNumberBannedError
 
-from telegram_groups.models import TelegramGroup
-# from 
-# from .utils import (
-#     get_messages,
-#     get_tags_from_str,
-#     get_answer_from_message,
-#     get_dialog_messages_from_dict,
-# )
 
 
 @app.task()

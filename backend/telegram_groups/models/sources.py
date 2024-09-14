@@ -32,30 +32,35 @@ class TelegramGroupSource(BaseGroupModel):
             and bool(self.last_check)
             and all(
                 listener.is_ready and listener.is_member(self.get_id())
-                for listener in self.get_listeners()
+                for listener in self.user_listeners
             )
         )
 
-    def get_actors(self) -> list[ActorUser]:
+    @property
+    def user_actors(self) -> list[ActorUser]:
         return self.actors.all()
 
-    def get_listeners(self) -> list[ListenerUser]:
+    @property
+    def user_listeners(self) -> list[ListenerUser]:
         return self.listeners.all()
 
+    def get_listener_user(self) -> ListenerUser:
+        return self.listeners.first()
+
+    @property
+    def roles_count(self):
+        return self.roles.count()
+
     def pre_check_obj(self):
-        listeners: list[ListenerUser] = self.get_listeners()
-        for listener in listeners:
+        for listener in self.user_listeners:
             if not listener.is_member(self.get_id()):
-                listener.join_chat(self.get_id())  # FIXME with response from join chat
+                listener.join_chat(self.get_id())
                 self.members.add(listener)
 
     def check_obj(self):
         try:
-            listeners = self.get_listeners()
-            errors = self._check_users(listeners)
-            if errors:
+            if errors := self._check_users(self.listeners):
                 raise Exception(errors)
-
         except Exception as e:
             self.errors = str(e)
         else:
@@ -65,42 +70,37 @@ class TelegramGroupSource(BaseGroupModel):
             self.save()
 
     def _check_users(self, users: list[ListenerUser]):
-        errors = []
-        for user in users:
-            if not user.is_member(self.get_id()):
-                errors.append(f"{user} is not member of {self}")
+        errors = [
+            f"{user} is not member of {self}"
+            for user in users
+            if not user.is_member(self.get_id())
+        ]
         if errors:
             return errors
-
         for user in users:
             user.check_obj()
-
-        for user in users:
-            if not user.is_active:
-                errors.append(f"{user} is not active")
+            user.refresh_from_db
+        errors.extend(f"{user} is not active" for user in users if not user.is_active)
         if errors:
             return errors
-
-        for user in users:
-            if user.errors:
-                errors.append(f"{user} has errors")
+        errors.extend(f"{user} has errors" for user in users if user.errors)
         if errors:
             return errors
-
-        for user in users:
-            if not user.is_ready:
-                errors.append(f"{user} is not ready")
+        errors.extend(f"{user} is not ready" for user in users if not user.is_ready)
         if errors:
             return errors
-
-    def get_listener_user(self) -> ListenerUser:
-        return self.listeners.first()
 
     def get_messages(self, limit=1000):
         listener = self.get_listener_user()
         return listener.get_messages(chat_id=self.get_id(), limit=limit)
 
     def save_messages(self, limit=1000):
+        def get_reply_to_msg(message):
+            if message.reply_to and hasattr(message.reply_to, "reply_to_msg_id"):
+                return self.messages.filter(
+                    message_id=message.reply_to.reply_to_msg_id
+                ).first()
+
         for message in self.get_messages(limit=limit):
             if not message.text or message.text == "":
                 continue
@@ -117,13 +117,7 @@ class TelegramGroupSource(BaseGroupModel):
                         "sex": getattr(message.from_id, "sex", None),
                     },
                 )
-                reply_to_msg = (
-                    self.messages.filter(
-                        message_id=message.reply_to.reply_to_msg_id
-                    ).first()
-                    if message.reply_to and hasattr(message.reply_to, "reply_to_msg_id")
-                    else None
-                )
+                reply_to_msg = get_reply_to_msg(message)
                 self.messages.get_or_create(
                     message_id=message.id,
                     defaults={
@@ -152,17 +146,14 @@ class TelegramGroupSource(BaseGroupModel):
             )
             self.members.add(member)
 
-    # def create_roles_with_available_actors(self):
-    #     roles = self.roles.all()
-    #     available_actors = ActorUser.objects.exclude(actor_roles__in=roles)
-    #     members = self.members.all()
-
-    #     if members.count() < available_actors.count():
-    #         raise ValidationError(
-    #             f"Available actors{available_actors.count()} more than members{members.count()}"
-    #         )
-    #     for index, member in enumerate(members):
-    #         roles.create(member=member, actor=available_actors[index])
+    def create_random_roles(self):  # FIXME конкретный рефакторинг
+        available_actors = ActorUser.active.exclude(actor_roles__in=self.roles.all())
+        if self.members.count() < available_actors.count():
+            raise ValidationError(
+                f"Available actors{available_actors.count()} more than members{members.count()}"
+            )
+        for index, member in enumerate(self.members):
+            self.roles.create(member=member, actor=available_actors[index])
 
     # def update_roles(self):
     #     self.create_roles_with_available_actors()

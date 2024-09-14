@@ -89,6 +89,17 @@ class Scene(TimeStampedModel):
             self.save()
 
     def _check_users(self, users: list[ActorUser]):
+        errors = [
+            f"{user} is not member of group"
+            for user in users
+            if not user.is_member(self.drain.get_id())
+        ]
+        if errors:
+            return errors
+
+        for user in users:
+            user.check_obj()
+            user.refresh_from_db
         errors = [f"{user} is not active" for user in users if not user.is_active]
         if errors:
             return errors
@@ -96,13 +107,6 @@ class Scene(TimeStampedModel):
         if errors:
             return errors
         errors.extend(f"{user} has errors" for user in users if user.errors)
-        if errors:
-            return errors
-        errors.extend(
-            f"{user} is not member of group"
-            for user in users
-            if not user.is_member(self.drain.get_id())
-        )
         if errors:
             return errors
 
@@ -206,9 +210,9 @@ class Scene(TimeStampedModel):
                 )
 
     def clean(self) -> None:
-        super().clean()
         if self.roles_count > self.dialog.roles_count:
             raise ValidationError("Count of roles in scene is more than in dialog")
+        return super().clean()
 
 
 class SceneRole(TimeStampedModel):
@@ -237,6 +241,6 @@ class SceneRole(TimeStampedModel):
         return f"role:{self.name}, actor:{self.actor}"
 
     def clean(self) -> None:
-        super().clean()
         if not self.scene.dialog.is_role_exist(self.name):
             raise ValidationError(f"role {self.name} not exist in dialog")
+        return super().clean()
