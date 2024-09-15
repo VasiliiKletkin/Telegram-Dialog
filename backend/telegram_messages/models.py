@@ -1,4 +1,5 @@
 from django.db import models
+from django.forms import ValidationError
 from telegram_groups.models import TelegramGroup
 from telegram_users.models import TelegramUser
 
@@ -34,3 +35,12 @@ class TelegramGroupMessage(models.Model):
 
     def __str__(self):
         return f"mes_id:{self.message_id} - {self.group.get_groupname()} - {self.text[:20]}"
+
+    def get_short_text(self):
+        return self.text[:20]
+
+    def clean(self):
+        if self.reply_to_msg and self.group != self.reply_to_msg.group:
+            raise ValidationError(
+                "reply_to_msg must be in the same group as the message"
+            )

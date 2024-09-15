@@ -32,16 +32,16 @@ class TelegramGroupSource(BaseGroupModel):
             and bool(self.last_check)
             and all(
                 listener.is_ready and listener.is_member(self.get_id())
-                for listener in self.user_listeners
+                for listener in self.listeners_user
             )
         )
 
     @property
-    def user_actors(self) -> list[ActorUser]:
+    def actors_user(self) -> list[ActorUser]:
         return self.actors.all()
 
     @property
-    def user_listeners(self) -> list[ListenerUser]:
+    def listeners_user(self) -> list[ListenerUser]:
         return self.listeners.all()
 
     def get_listener_user(self) -> ListenerUser:
@@ -52,14 +52,14 @@ class TelegramGroupSource(BaseGroupModel):
         return self.roles.count()
 
     def pre_check_obj(self):
-        for listener in self.user_listeners:
+        for listener in self.listeners_user:
             if not listener.is_member(self.get_id()):
-                listener.join_chat(self.get_id())
+                listener.join_chat(self.groupname)
                 self.members.add(listener)
 
     def check_obj(self):
         try:
-            if errors := self._check_users(self.listeners):
+            if errors := self._check_users(self.listeners_user):
                 raise Exception(errors)
         except Exception as e:
             self.errors = str(e)
