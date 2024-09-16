@@ -1,5 +1,4 @@
 from datetime import timedelta
-
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.timezone import now
@@ -17,13 +16,6 @@ class TelegramGroupSource(BaseGroupModel):
         blank=True,
     )
 
-    actors = models.ManyToManyField(
-        ActorUser,
-        related_name="actor_sources",
-        blank=True,
-        through="roles.TelegramGroupRole",
-    )
-
     @property
     def is_ready(self):
         return (
@@ -32,16 +24,12 @@ class TelegramGroupSource(BaseGroupModel):
             and bool(self.last_check)
             and all(
                 listener.is_ready and listener.is_member(self.get_id())
-                for listener in self.listeners_user
+                for listener in self.listener_users
             )
         )
 
     @property
-    def actors_user(self) -> list[ActorUser]:
-        return self.actors.all()
-
-    @property
-    def listeners_user(self) -> list[ListenerUser]:
+    def listener_users(self) -> list[ListenerUser]:
         return self.listeners.all()
 
     def get_listener_user(self) -> ListenerUser:
@@ -52,14 +40,14 @@ class TelegramGroupSource(BaseGroupModel):
         return self.roles.count()
 
     def pre_check_obj(self):
-        for listener in self.listeners_user:
+        for listener in self.listener_users:
             if not listener.is_member(self.get_id()):
                 listener.join_chat(self.groupname)
                 self.members.add(listener)
 
     def check_obj(self):
         try:
-            if errors := self._check_users(self.listeners_user):
+            if errors := self._check_users(self.listener_users):
                 raise Exception(errors)
         except Exception as e:
             self.errors = str(e)
@@ -117,6 +105,7 @@ class TelegramGroupSource(BaseGroupModel):
                         "sex": getattr(message.from_id, "sex", None),
                     },
                 )
+                self.members.add(user)
                 reply_to_msg = get_reply_to_msg(message)
                 self.messages.get_or_create(
                     message_id=message.id,
@@ -146,20 +135,20 @@ class TelegramGroupSource(BaseGroupModel):
             )
             self.members.add(member)
 
-    def create_random_roles(self):  # FIXME конкретный рефакторинг
-        available_actors = ActorUser.active.exclude(actor_roles__in=self.roles.all())
-        if self.members.count() < available_actors.count():
-            raise ValidationError(
-                f"Available actors{available_actors.count()} more than members{members.count()}"
-            )
-        for index, member in enumerate(self.members):
-            self.roles.create(member=member, actor=available_actors[index])
+    # def create_roles(self):  # FIXME конкретный рефакторинг
+    #     available_actors = ActorUser.active.exclude(actor_roles__in=self.roles.all())
+    #     members_without_roles = self.members.filter(member_roles__isnull=True)
+    #     if members_without_roles.count() < available_actors.count():
+    #         raise ValidationError(
+    #             f"Members{members_without_roles.count()} less than available actors{available_actors.count()}"
+    #         )
+    #     for index, member in enumerate(self.members):
+    #         self.roles.create(member=member, actor=available_actors[index])
 
     # def update_roles(self):
-    #     self.create_roles_with_available_actors()
     #     roles = self.roles.all()
     #     end_date = now()
-    #     start_date = end_date - timedelta(days=7)
+    #     start_date = end_date - timedelta(days=1)
     #     members = (
     #         self.members.annotate(
     #             messages_count=models.Count(
@@ -171,12 +160,16 @@ class TelegramGroupSource(BaseGroupModel):
     #         .filter(messages_count__gt=0)
     #     )
 
+    #     available_actors = ActorUser.active.exclude(actor_roles__in=self.roles.all())
+    #     members_without_roles = members.filter(member_roles__isnull=True)
+
+    #     if members_without_roles.count() > available_actors.count():
+    #         raise ValidationError(
+    #             f"Active members{members_without_roles.count()} more than available actors{available_actors.count()}"
+    #         )
+
     #     members_without_roles = members.filter(member_roles__isnull=True)
     #     unusable_roles = roles.exclude(member__in=members).order_by("-modified")
 
-    #     if members_without_roles.count() > unusable_roles.count():
-    #         raise ValidationError(
-    #             f"Active members{members_without_roles.count()} more than available roles{unusable_roles.count()}"
-    #         )
     #     for index, member in enumerate(members_without_roles):
     #         unusable_roles[index].update(member=member)

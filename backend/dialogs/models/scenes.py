@@ -58,8 +58,8 @@ class Scene(TimeStampedModel):
         return self.roles.values_list("name", flat=True).distinct()
 
     @property
-    def actors(self):
-        return ActorUser.objects.filter(scene_roles__in=self.roles.all()).distinct()
+    def actors(self) -> List[ActorUser]:
+        return self.drain.actors.all()
 
     def pre_check_obj(self):
         self.create_random_roles()

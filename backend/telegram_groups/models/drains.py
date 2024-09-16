@@ -1,3 +1,4 @@
+from typing import List
 from .base import BaseGroupModel
 from django.db import models
 from .sources import TelegramGroupSource
@@ -7,6 +8,12 @@ from telegram_users.models import ActorUser
 
 
 class TelegramGroupDrain(BaseGroupModel):
+    actors = models.ManyToManyField(
+        ActorUser,
+        related_name="actor_drains",
+        blank=True,
+    )
+
     sources = models.ManyToManyField(
         TelegramGroupSource, related_name="drains", blank=True
     )
@@ -19,23 +26,23 @@ class TelegramGroupDrain(BaseGroupModel):
             and bool(self.last_check)
             and all(
                 actor.is_ready and actor.is_member(self.get_id())
-                for actor in self.user_actors
+                for actor in self.actor_users
             )
         )
 
     @property
-    def user_actors(self):
-        return ActorUser.objects.filter(actor_sources__in=self.sources.all())
+    def actor_users(self) -> List[ActorUser]:
+        return self.actors.all()
 
     def pre_check_obj(self):
-        for actor in self.user_actors:
+        for actor in self.actor_users:
             if not actor.is_member(self.get_id()):
                 actor.join_chat(self.get_id())
                 self.members.add(actor)
 
     def check_obj(self):
         try:
-            if errors := self._check_users(self.user_actors):
+            if errors := self._check_users(self.actor_users):
                 raise Exception(errors)
         except Exception as e:
             self.errors = str(e)

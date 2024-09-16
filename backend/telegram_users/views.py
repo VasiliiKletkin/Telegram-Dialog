@@ -1,6 +1,6 @@
 from dal import autocomplete
-from telegram_groups.models import TelegramGroupSource
-from .models import ActorUser, MemberUser
+from telegram_groups.models import TelegramGroupSource, TelegramGroupDrain
+from .models import ActorUser
 
 
 class MemberAutocomplete(autocomplete.Select2QuerySetView):
@@ -16,3 +16,9 @@ class MemberAutocomplete(autocomplete.Select2QuerySetView):
 class ActorAutocomplete(autocomplete.Select2QuerySetView):
     search_fields = ["username", "id"]
     queryset = ActorUser.active.all()
+
+    def get_queryset(self):
+        if drain_id := self.forwarded.get("drain_id"):
+            drain = TelegramGroupDrain.objects.get(id=drain_id)
+            return drain.actors.all()
+        return []

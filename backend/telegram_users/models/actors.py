@@ -1,5 +1,4 @@
 from .base import BaseClientUser, BaseClientUserManager
-from django.db import models
 
 
 class ActorUserManager(BaseClientUserManager):
@@ -20,4 +19,6 @@ class ActorUser(BaseClientUser):
         proxy = True
 
     def send_message(self, chat_id, text, reply_to_msg_id=None):
-        return self.get_client().send_message(chat_id=chat_id, text=text, reply_to_msg_id=reply_to_msg_id)
+        return self.get_client().send_message(
+            chat_id=chat_id, text=text, reply_to_msg_id=reply_to_msg_id
+        )

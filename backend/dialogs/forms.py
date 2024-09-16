@@ -20,7 +20,8 @@ class SceneRoleInlineAdminForm(forms.ModelForm):
         fields = "__all__"
         widgets = {
             "actor": autocomplete.ModelSelect2(
-                url="actor-autocomplete"
+                url="actor-autocomplete",
+                forward=[forward.Field("drain", "drain_id")],
             ),
         }
 
@@ -42,9 +43,7 @@ class SceneAdminForm(forms.ModelForm):
         model = Scene
         fields = "__all__"
         widgets = {
-            "drain": autocomplete.ModelSelect2(
-                url="drain-autocomplete"
-            ),
+            "drain": autocomplete.ModelSelect2(url="drain-autocomplete"),
             "dialog": autocomplete.ModelSelect2(
                 url="dialog-autocomplete",
                 forward=["telegram_group", forward.Const(True, "is_active")],
