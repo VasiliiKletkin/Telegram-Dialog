@@ -116,11 +116,7 @@ class Scene(TimeStampedModel):
         messages: List[DialogMessage] = self.dialog.messages.order_by("delay")
         for message in messages:
             role: SceneRole = self.get_role(message.role_name)
-            target_time = now() + timedelta(
-                seconds=message.delay.hour * 3600
-                + message.delay.minute * 60
-                + message.delay.second
-            )
+            target_time = now() + message.delay
             target_time_str = target_time.strftime("%d-%b-%Y:%H:%M:%S")
             clocked_schedule = ClockedSchedule.objects.create(clocked_time=target_time)
             PeriodicTask.objects.create(

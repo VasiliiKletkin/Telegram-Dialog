@@ -1,4 +1,8 @@
 from django.contrib import admin, messages
+from django.utils.timezone import now
+
+from datetime import timedelta
+from dialogs.tasks.dialogs import generate_dialogs_from_source
 from ..models import TelegramGroupSource
 from roles.models import TelegramGroupRole
 from .base import BaseTelegramGroupModelAdmin
@@ -13,10 +17,10 @@ class TelegramGroupRoleInlineAdmin(admin.TabularInline):
 
 @admin.register(TelegramGroupSource)
 class TelegramGroupSourceAdmin(BaseTelegramGroupModelAdmin):
-    inlines = [TelegramGroupRoleInlineAdmin]
     actions = [
         "save_messages",
         "save_members",
+        "test",
     ] + BaseTelegramGroupModelAdmin.actions
 
     def save_messages(self, request, queryset):
@@ -32,6 +36,15 @@ class TelegramGroupSourceAdmin(BaseTelegramGroupModelAdmin):
             obj.save_members()
 
     save_members.short_description = "Save members"
+
+    def test(self, request, queryset):
+        messages.add_message(request, messages.INFO, "Testing...")
+        for obj in queryset:
+            generate_dialogs_from_source(
+                obj.id,
+                date_from=now() - timedelta(days=10),
+                date_to=now(),
+            )
 
     # def generate_dialogs(self, request, queryset):
     #     messages.add_message(request, messages.INFO, "Generate dialogs from group...")

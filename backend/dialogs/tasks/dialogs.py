@@ -1,10 +1,43 @@
 from datetime import timedelta
-
+from datetime import datetime
+from typing import List
+from telegram_groups.models.sources import TelegramGroupSource
+from telegram_messages.models import TelegramGroupMessage
 from core.celery import app
 from dialogs.models import Dialog, DialogMessage, Scene
 from django.db.models import Count
 from telethon.errors import PhoneNumberBannedError
 
+
+@app.task()
+def generate_dialogs_from_source(
+    source_id: int, date_from: datetime, date_to: datetime
+):
+    source = TelegramGroupSource.objects.get(id=source_id)
+    source_messages: List[TelegramGroupMessage] = source.messages.filter(
+        date__range=(date_from, date_to)
+    ).order_by("date")
+    dialog = Dialog.objects.create(
+        is_active=True, name=f"{source.name} {date_from}-{date_to}"
+    )
+
+    for message in source_messages:
+        reply_to_msg = None
+        if message.reply_to_msg:
+            reply_to_msg = (
+                dialog.messages.filter(
+                    text=message.reply_to_msg.text,
+                    role_name=str(message.reply_to_msg.user.id),
+                )
+                .order_by("-delay")
+                .first()
+            )
+        dialog.messages.create(
+            role_name=str(message.user.id),
+            text=message.text,
+            delay=message.date - date_from,
+            reply_to_msg=reply_to_msg,
+        )
 
 
 @app.task()

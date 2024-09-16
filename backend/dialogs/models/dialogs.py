@@ -1,15 +1,13 @@
-from datetime import time
+from datetime import datetime, time, timedelta
 
 from django.db import models
 from django.forms import ValidationError
-from django.utils import timezone
 from model_utils.models import TimeStampedModel
 
 
 class Dialog(TimeStampedModel):
     is_active = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
-    date = models.DateTimeField(default=timezone.now)
 
     class Meta:
         indexes = [
@@ -45,7 +43,7 @@ class DialogMessage(TimeStampedModel):
     )
     role_name = models.CharField(max_length=255)
     text = models.TextField()
-    delay = models.TimeField(default=time(0))
+    delay = models.DurationField(default=timedelta(0))
     reply_to_msg = models.ForeignKey(
         "self",
         on_delete=models.CASCADE,
