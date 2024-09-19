@@ -19,7 +19,7 @@ class Scene(TimeStampedModel):
     errors = models.TextField(null=True, blank=True)
 
     start_date = models.DateTimeField(default=now)
-    drain = models.ForeignKey(TelegramGroupDrain, on_delete=models.CASCADE)
+    drain = models.ForeignKey(TelegramGroupDrain, on_delete=models.CASCADE, related_name="scenes")
     dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name="scenes")
 
     class Meta:
@@ -204,11 +204,6 @@ class Scene(TimeStampedModel):
                     actor=random.choice(available_actors),
                     name=random.choice(available_name_roles),
                 )
-
-    def clean(self) -> None:
-        if self.roles_count > self.dialog.roles_count:
-            raise ValidationError("Count of roles in scene is more than in dialog")
-        return super().clean()
 
 
 class SceneRole(TimeStampedModel):

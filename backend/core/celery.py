@@ -13,8 +13,17 @@ app.autodiscover_tasks()
 
 
 app.conf.beat_schedule = {
-    "send_messages_from_groups": {
+    "save_messages_from_groups": {
         "task": "telegram_groups.tasks.save_messages_from_groups",
-        "schedule": crontab(minute=0, hour=0,),
+        "schedule": crontab(
+            hour=0,
+        ),
     },
+
+    "generate_scenes_every_day": {
+        "task": "dialogs.tasks.generate_scenes_every_day",
+        "schedule": crontab(
+            hour=1,
+        ),
+    }
 }
