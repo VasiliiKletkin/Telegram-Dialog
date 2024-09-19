@@ -1,8 +1,8 @@
+from typing import List
 from django.contrib import admin, messages
 from django.utils.timezone import now
 
 from datetime import timedelta
-from dialogs.tasks.dialogs import generate_dialog_from_source
 from ..models import TelegramGroupSource
 from .base import BaseTelegramGroupModelAdmin
 
@@ -15,25 +15,24 @@ class TelegramGroupSourceAdmin(BaseTelegramGroupModelAdmin):
         "test",
     ] + BaseTelegramGroupModelAdmin.actions
 
-    def save_messages(self, request, queryset):
+    def save_messages(self, request, queryset: List[TelegramGroupSource]):
         messages.add_message(request, messages.INFO, "Saving messages...")
         for obj in queryset:
             obj.save_messages()
 
     save_messages.short_description = "Save messages"
 
-    def save_members(self, request, queryset):
+    def save_members(self, request, queryset: List[TelegramGroupSource]):
         messages.add_message(request, messages.INFO, "Saving members...")
         for obj in queryset:
             obj.save_members()
 
     save_members.short_description = "Save members"
 
-    def test(self, request, queryset):
+    def test(self, request, queryset: List[TelegramGroupSource]):
         messages.add_message(request, messages.INFO, "Testing...")
         for obj in queryset:
-            generate_dialog_from_source(
-                obj.id,
+            obj.generate_dialog(
                 date_from=now() - timedelta(days=10),
                 date_to=now(),
             )

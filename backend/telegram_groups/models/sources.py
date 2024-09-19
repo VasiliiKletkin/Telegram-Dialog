@@ -1,4 +1,5 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
+from typing import List
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.timezone import now
@@ -134,6 +135,37 @@ class TelegramGroupSource(BaseGroupModel):
                 },
             )
             self.members.add(member)
+
+    def generate_dialog(self, date_from: datetime, date_to: datetime):
+        from telegram_messages.models import TelegramGroupMessage
+        from dialogs.models import Dialog
+
+        source_messages: List[TelegramGroupMessage] = self.messages.filter(
+            date__range=(date_from, date_to)
+        ).order_by("date")
+        dialog = Dialog.objects.create(
+            is_active=True,
+            name=f"{self.name} {date_from.strftime('%Y.%m.%d %H:%M:%S')}-{date_to.strftime('%Y.%m.%d %H:%M:%S')}",
+        )
+
+        for message in source_messages:
+            reply_to_msg = None
+            if message.reply_to_msg:
+                reply_to_msg = (
+                    dialog.messages.filter(
+                        text=message.reply_to_msg.text,
+                        role_name=str(message.reply_to_msg.user.id),
+                    )
+                    .order_by("-delay")
+                    .first()
+                )
+            dialog.messages.create(
+                role_name=str(message.user.id),
+                text=message.text,
+                delay=message.date - date_from,
+                reply_to_msg=reply_to_msg,
+            )
+        return dialog
 
     # def create_roles(self):  # FIXME конкретный рефакторинг
     #     available_actors = ActorUser.active.exclude(actor_roles__in=self.roles.all())
