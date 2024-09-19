@@ -12,7 +12,7 @@ class TelegramGroupSourceAdmin(BaseTelegramGroupModelAdmin):
     actions = [
         "save_messages",
         "save_members",
-        "test",
+        "generate_dialog",
     ] + BaseTelegramGroupModelAdmin.actions
 
     def save_messages(self, request, queryset: List[TelegramGroupSource]):
@@ -29,11 +29,11 @@ class TelegramGroupSourceAdmin(BaseTelegramGroupModelAdmin):
 
     save_members.short_description = "Save members"
 
-    def test(self, request, queryset: List[TelegramGroupSource]):
+    def generate_dialog(self, request, queryset: List[TelegramGroupSource]):
         messages.add_message(request, messages.INFO, "Testing...")
         for obj in queryset:
             obj.generate_dialog(
-                date_from=now() - timedelta(days=10),
+                date_from=now() - timedelta(days=1),
                 date_to=now(),
             )
 
