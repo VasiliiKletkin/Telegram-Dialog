@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     "djelethon",
     "dialogs",
     "proxies",
-    "roles",
     "imports",
     "telegram_groups",
     "telegram_users",
