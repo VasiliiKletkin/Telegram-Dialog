@@ -167,3 +167,5 @@ cython_debug/
 *staticfiles
 
 *postgres_data
+
+.trunk
