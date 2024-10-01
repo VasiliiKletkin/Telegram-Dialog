@@ -1,13 +1,12 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.timezone import now
 
 from telegram_users.models.members import MemberUser
 from telegram_users.models.users import TelegramUser
 from .base import BaseGroupModel
-from telegram_users.models import ActorUser, ListenerUser
+from telegram_users.models import ListenerUser
 
 
 class TelegramGroupSource(BaseGroupModel):

@@ -9,7 +9,8 @@ class ActiveManager(models.Manager):
         return super().get_queryset().filter(is_active=True)
 
 
-class BaseGroupModel(TelegramGroup):
+class BaseGroupModel(models.Model):
+    group = models.OneToOneField(TelegramGroup, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=False)
     last_check = models.DateTimeField(null=True, blank=True)
     errors = models.TextField(null=True, blank=True)
@@ -23,6 +24,18 @@ class BaseGroupModel(TelegramGroup):
     def is_ready(self):
         return self.is_active and not self.errors and bool(self.last_check)
 
+    @property
+    def members(self):
+        return self.group.members
+
+    @property
+    def groupname(self):
+        return self.group.groupname
+
+    @property
+    def name(self):
+        return self.group.name
+
     @abstractmethod
     def check_obj(self):
         raise NotImplementedError("check_obj method must be implemented")
@@ -30,3 +43,15 @@ class BaseGroupModel(TelegramGroup):
     @abstractmethod
     def pre_check_obj(self):
         raise NotImplementedError("pre_check_obj method must be implemented")
+
+    def get_id(self):
+        return self.group.get_id()
+
+    def get_messages_count(self):
+        return self.group.get_messages_count()
+
+    def get_groupname(self):
+        return self.group.get_groupname()
+
+    def __str__(self):
+        return str(self.group)
