@@ -4,7 +4,6 @@ from django.utils.timezone import now
 
 from datetime import timedelta
 
-from telegram_groups.tasks import save_messages_from_groups
 from ..models import TelegramGroupSource
 from .base import BaseTelegramGroupModelAdmin
 
@@ -26,9 +25,8 @@ class TelegramGroupSourceAdmin(BaseTelegramGroupModelAdmin):
 
     def save_members(self, request, queryset: List[TelegramGroupSource]):
         messages.add_message(request, messages.INFO, "Saving members...")
-        save_messages_from_groups.delay()
-        # for obj in queryset:
-        #     obj.save_members()
+        for obj in queryset:
+            obj.save_members()
 
     save_members.short_description = "Save members"
 
