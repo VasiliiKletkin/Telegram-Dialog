@@ -32,7 +32,7 @@ class TelegramClientAdmin(admin.ModelAdmin):
         for obj in queryset:
             obj.check_obj()
 
-    check_obj.short_description = "Check client"
+    check_obj.short_description = "Check"
 
     # def save_all_dialogs(self, request, queryset):
     #     messages.add_message(request, messages.INFO, "Save all dialogs...")

@@ -1,5 +1,8 @@
 from django.db import models
+
+from telegram_users.models.members import MemberUser
 from .groups import TelegramGroup
+from django.db.models import QuerySet
 
 from abc import abstractmethod
 
@@ -21,20 +24,24 @@ class BaseGroupModel(models.Model):
         abstract = True
 
     @property
-    def is_ready(self):
+    def is_ready(self) -> bool:
         return self.is_active and not self.errors and bool(self.last_check)
 
     @property
-    def members(self):
+    def members(self) -> QuerySet[MemberUser]:
         return self.group.members
 
     @property
-    def groupname(self):
+    def groupname(self) -> str:
         return self.group.groupname
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.group.name
+
+    @property
+    def messages(self) -> QuerySet:
+        return self.group.messages
 
     @abstractmethod
     def check_obj(self):
